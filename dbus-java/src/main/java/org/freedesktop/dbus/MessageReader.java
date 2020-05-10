@@ -49,6 +49,7 @@ public class MessageReader implements Closeable {
         }
         if (len[0] < 12) {
             try {
+                logger.trace("Reading: buflen={}, off={}, len={}", buf.length, len[0], 12 - len[0]);
                 rv = inputStream.read(buf, len[0], 12 - len[0]);
             } catch (SocketTimeoutException exSt) {
                 return null;

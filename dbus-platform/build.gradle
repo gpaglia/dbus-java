@@ -1,0 +1,27 @@
+plugins {
+    id 'java-platform'
+}
+
+apply from: './platform.gradle'
+
+javaPlatform {
+    allowDependencies()
+}
+
+dependencies {
+    constraints {
+        // logging
+        api group: 'org.slf4j', name: 'slf4j-api', version: "${dbus__slf4jVersion}"
+        runtime group: 'ch.qos.logback', name: 'logback-classic', version: "${dbus__logbackVersion}"
+
+        // hamcrest
+        api group: 'org.hamcrest', name: 'hamcrest-core', version: "${dbus__hamcrestVersion}"
+
+        // hamcrest-optional
+        api group: 'com.github.npathai', name: 'hamcrest-optional', version: "${dbus__hamcrestOptionalVersion}"
+
+    }
+    // junit5 BOM
+    api platform("org.junit:junit-bom:${dbus__junitVersion}")
+
+}

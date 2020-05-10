@@ -46,6 +46,7 @@ public class MarshallingFileDescriptorTest {
         System.out.println("Created file descriptor: " + getFileDescriptorIntId(sampleFileStream.getFD()));
         
         serverConn.exportObject(TEST_OBJECT_PATH, fd);
+        Utils.sleep(250);
     }
 
     @AfterEach

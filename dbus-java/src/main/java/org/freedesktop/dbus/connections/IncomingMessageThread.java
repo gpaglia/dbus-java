@@ -30,6 +30,7 @@ public class IncomingMessageThread extends Thread {
     public void run() {
 
         Message msg = null;
+        logger.trace("Reader thread loop starting...");
         while (!terminate) {
             msg = null;
 
@@ -58,5 +59,6 @@ public class IncomingMessageThread extends Thread {
                 }
             }
         }
+        logger.trace("Reader thread terminated");
     }
 }

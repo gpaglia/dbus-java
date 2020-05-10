@@ -1,0 +1,40 @@
+plugins {
+    id 'io.wusa.semver-git-plugin'
+    id 'maven-publish'
+    id 'io.freefair.lombok'
+}
+
+group = 'com.gpaglia.dbus'
+description = 'Evolution of github.com:hypfvieh/dbus-java.git [gradle, java 11, windows compat]'
+
+// version from git
+version = semver.info
+
+subprojects {
+/*
+    afterEvaluate { Project subp ->
+        // set java version and other standards for projects with java plugin installed
+        java {
+            sourceCompatibility = JavaVersion.VERSION_11
+            targetCompatibility = JavaVersion.VERSION_11
+            withJavadocJar()
+            withSourcesJar()
+        }
+
+    }
+*/
+
+    // configure repositories
+
+    repositories {
+        mavenLocal()
+        jcenter()
+    }
+
+    tasks.withType(Test) {
+        useJUnitPlatform {
+            // options here
+        }
+    }
+}
+

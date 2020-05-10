@@ -1,0 +1,35 @@
+plugins {
+    id 'java-library'
+    id 'io.wusa.semver-git-plugin'
+    id 'maven-publish'
+    id 'io.freefair.lombok'
+}
+
+// version from git
+version = '0.0.1' //semver.info
+
+// configure repositories
+
+repositories {
+    mavenLocal()
+    jcenter()
+}
+
+// configure sourcesets
+
+dependencies {
+}
+
+
+// publishing
+publishing {
+    publications {
+        theFramework(MavenPublication) {
+            from components.java
+            // artifact ...
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
