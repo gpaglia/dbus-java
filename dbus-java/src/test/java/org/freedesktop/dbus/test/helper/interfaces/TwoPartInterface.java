@@ -17,15 +17,16 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.DBusSignal;
 
 public interface TwoPartInterface extends DBusInterface {
-    TwoPartObject getNew();
-    //CHECKSTYLE:OFF
-    class TwoPartSignal extends DBusSignal {
-        public final TwoPartObject o;
+  TwoPartObject getNew();
 
-        public TwoPartSignal(String path, TwoPartObject _o) throws DBusException {
-            super(path, _o);
-            this.o = _o;
-        }
+  //CHECKSTYLE:OFF
+  class TwoPartSignal extends DBusSignal {
+    public final TwoPartObject o;
+
+    public TwoPartSignal(String path, TwoPartObject _o) throws DBusException {
+      super(path, _o);
+      this.o = _o;
     }
-    //CHECKSTYLE:ON
+  }
+  //CHECKSTYLE:ON
 }

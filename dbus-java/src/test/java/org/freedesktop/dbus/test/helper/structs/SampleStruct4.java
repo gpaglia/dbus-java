@@ -18,15 +18,15 @@ import org.freedesktop.dbus.annotations.Position;
 
 
 public final class SampleStruct4 extends Struct {
-    @Position(0)
-    private final List<IntStruct> innerListOfLists;
+  @Position(0)
+  private final List<IntStruct> innerListOfLists;
 
-	public SampleStruct4(List<IntStruct> innerListOfLists) {
-		this.innerListOfLists = innerListOfLists;
-	}
+  public SampleStruct4(List<IntStruct> innerListOfLists) {
+    this.innerListOfLists = innerListOfLists;
+  }
 
-	public List<IntStruct> getInnerListOfLists() {
-		return innerListOfLists;
-	}
+  public List<IntStruct> getInnerListOfLists() {
+    return innerListOfLists;
+  }
 
 }

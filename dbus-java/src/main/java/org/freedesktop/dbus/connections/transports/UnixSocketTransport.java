@@ -14,65 +14,67 @@ import jnr.unixsocket.UnixSocketOptions;
 
 /**
  * Transport type representing a transport connection to a unix socket.
+ *
  * @author hypfvieh
  * @since v3.2.0 - 2019-02-08
  */
 public class UnixSocketTransport extends AbstractTransport {
-    private final UnixSocketAddress unixSocketAddress;
-    private UnixServerSocketChannel unixServerSocket;
+  private final UnixSocketAddress unixSocketAddress;
+  private UnixServerSocketChannel unixServerSocket;
 
-    UnixSocketTransport(BusAddress _address) throws IOException {
-        super(_address); 
-        
-        if (_address.isAbstract()) {
-            unixSocketAddress = new UnixSocketAddress("\0" + _address.getAbstract());
-        } else if (_address.hasPath()) {
-            unixSocketAddress = new UnixSocketAddress(_address.getPath());
-        } else {
-            throw new IOException("Unix socket url has to specify 'path' or 'abstract'");
-        }
-        
-        setSaslAuthMode(SASL.AUTH_EXTERNAL);
+  UnixSocketTransport(BusAddress _address) throws IOException {
+    super(_address);
+
+    if (_address.isAbstract()) {
+      unixSocketAddress = new UnixSocketAddress("\0" + _address.getAbstract());
+    } else if (_address.hasPath()) {
+      unixSocketAddress = new UnixSocketAddress(_address.getPath());
+    } else {
+      throw new IOException("Unix socket url has to specify 'path' or 'abstract'");
     }
 
-    /**
-     * Establish a connection to DBus using unix sockets.
-     * @throws IOException on error
-     */
-    @Override
-    void connect() throws IOException {
-        UnixSocketChannel us;
-        if (getAddress().isListeningSocket()) {
-            unixServerSocket = UnixServerSocketChannel.open();
+    setSaslAuthMode(SASL.AUTH_EXTERNAL);
+  }
 
-            unixServerSocket.socket().bind(unixSocketAddress);
-            us = unixServerSocket.accept();
-        } else {
-            us = UnixSocketChannel.open(unixSocketAddress);
-        }
+  /**
+   * Establish a connection to DBus using unix sockets.
+   *
+   * @throws IOException on error
+   */
+  @Override
+  void connect() throws IOException {
+    UnixSocketChannel us;
+    if (getAddress().isListeningSocket()) {
+      unixServerSocket = UnixServerSocketChannel.open();
 
-        us.configureBlocking(true);
-        
-        // MacOS doesn't support SO_PASSCRED
-        if (!SystemUtil.isMacOs()) {
-            us.setOption(UnixSocketOptions.SO_PASSCRED, true);
-        }
-
-        setOutputWriter(us.socket().getOutputStream());
-        setInputReader(us.socket().getInputStream());
-        
-        authenticate(us.socket().getOutputStream(), us.socket().getInputStream(), us.socket());
+      unixServerSocket.socket().bind(unixSocketAddress);
+      us = unixServerSocket.accept();
+    } else {
+      us = UnixSocketChannel.open(unixSocketAddress);
     }
 
+    us.configureBlocking(true);
 
-    @Override
-    public void close() throws IOException {
-        getLogger().debug("Disconnecting Transport");
-        
-        if (unixServerSocket != null && unixServerSocket.isOpen()) {
-            unixServerSocket.close();
-        }
-        
-        super.close();
+    // MacOS doesn't support SO_PASSCRED
+    if (!SystemUtil.isMacOs()) {
+      us.setOption(UnixSocketOptions.SO_PASSCRED, true);
     }
+
+    setOutputWriter(us.socket().getOutputStream());
+    setInputReader(us.socket().getInputStream());
+
+    authenticate(us.socket().getOutputStream(), us.socket().getInputStream(), us.socket());
+  }
+
+
+  @Override
+  public void close() throws IOException {
+    getLogger().debug("Disconnecting Transport");
+
+    if (unixServerSocket != null && unixServerSocket.isOpen()) {
+      unixServerSocket.close();
+    }
+
+    super.close();
+  }
 }

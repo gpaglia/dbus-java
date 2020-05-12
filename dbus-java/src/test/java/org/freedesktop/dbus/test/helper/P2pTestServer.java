@@ -28,116 +28,116 @@ import org.freedesktop.dbus.test.helper.structs.SampleStruct4;
 import org.freedesktop.dbus.types.UInt16;
 
 public class P2pTestServer implements SampleRemoteInterface {
-    @Override
-    public int[][] teststructstruct(SampleStruct3 in) {
-        List<List<Integer>> lli = in.getInnerListOfLists();
-        int[][] out = new int[lli.size()][];
-        for (int j = 0; j < out.length; j++) {
-            out[j] = new int[lli.get(j).size()];
-            for (int k = 0; k < out[j].length; k++) {
-                out[j][k] = lli.get(j).get(k);
-            }
-        }
-        return out;
+  @Override
+  public int[][] teststructstruct(SampleStruct3 in) {
+    List<List<Integer>> lli = in.getInnerListOfLists();
+    int[][] out = new int[lli.size()][];
+    for (int j = 0; j < out.length; j++) {
+      out[j] = new int[lli.get(j).size()];
+      for (int k = 0; k < out[j].length; k++) {
+        out[j][k] = lli.get(j).get(k);
+      }
     }
-    
-    @Override
-	public int[][] testListstruct(SampleStruct4 in) {
-		List<IntStruct> list = in.getInnerListOfLists();
-		int size = list.size();
-		int[][] retVal = new int [size][];
-		for(int i = 0; i < size; i++) {
-			IntStruct elem = list.get(i);
-			retVal[i] = new int [] { elem.getValue1(), elem.getValue2()}; 
-		}
-		return retVal;
-	}
+    return out;
+  }
 
-    @Override
-    public String getNameAndThrow() {
-        return getName();
+  @Override
+  public int[][] testListstruct(SampleStruct4 in) {
+    List<IntStruct> list = in.getInnerListOfLists();
+    int size = list.size();
+    int[][] retVal = new int[size][];
+    for (int i = 0; i < size; i++) {
+      IntStruct elem = list.get(i);
+      retVal[i] = new int[]{elem.getValue1(), elem.getValue2()};
     }
+    return retVal;
+  }
 
-    @Override
-    public String getName() {
-        System.out.println("getName called");
-        return "Peer2Peer Server";
-    }
+  @Override
+  public String getNameAndThrow() {
+    return getName();
+  }
 
-    @Override
-    public <T> int frobnicate(List<Long> n, Map<String, Map<UInt16, Short>> m, T v) {
-        return 3;
-    }
+  @Override
+  public String getName() {
+    System.out.println("getName called");
+    return "Peer2Peer Server";
+  }
 
-    @Override
-    public void throwme() throws SampleException {
-        System.out.println("throwme called");
-        throw new SampleException("BOO");
-    }
+  @Override
+  public <T> int frobnicate(List<Long> n, Map<String, Map<UInt16, Short>> m, T v) {
+    return 3;
+  }
 
-    @Override
-    public void waitawhile() {
-        return;
-    }
+  @Override
+  public void throwme() throws SampleException {
+    System.out.println("throwme called");
+    throw new SampleException("BOO");
+  }
 
-    @Override
-    public int overload() {
-        return 1;
-    }
+  @Override
+  public void waitawhile() {
+    return;
+  }
 
-    @Override
-    public void sig(Type[] s) {
-    }
+  @Override
+  public int overload() {
+    return 1;
+  }
 
-    @Override
-    public void newpathtest(DBusPath p) {
-    }
+  @Override
+  public void sig(Type[] s) {
+  }
 
-    @Override
-    public void reg13291(byte[] as, byte[] bs) {
-    }
+  @Override
+  public void newpathtest(DBusPath p) {
+  }
 
-    @Override
-    public DBusPath pathrv(DBusPath a) {
-        return a;
-    }
+  @Override
+  public void reg13291(byte[] as, byte[] bs) {
+  }
 
-    @Override
-    public List<DBusPath> pathlistrv(List<DBusPath> a) {
-        return a;
-    }
+  @Override
+  public DBusPath pathrv(DBusPath a) {
+    return a;
+  }
 
-    @Override
-    public Map<DBusPath, DBusPath> pathmaprv(Map<DBusPath, DBusPath> a) {
-        return a;
-    }
+  @Override
+  public List<DBusPath> pathlistrv(List<DBusPath> a) {
+    return a;
+  }
 
-    @Override
-    public boolean isRemote() {
-        return false;
-    }
+  @Override
+  public Map<DBusPath, DBusPath> pathmaprv(Map<DBusPath, DBusPath> a) {
+    return a;
+  }
 
-    @Override
-    public String getObjectPath() {
-        return null;
-    }
+  @Override
+  public boolean isRemote() {
+    return false;
+  }
 
-    @Override
-    public float testfloat(float[] f) {
-        System.out.println("got float: " + Arrays.toString(f));
-        return f[0];
-    }
+  @Override
+  public String getObjectPath() {
+    return null;
+  }
 
-    public static void main(String[] args) throws Exception {
-        String address = DirectConnection.createDynamicSession();
-        // String address = "tcp:host=localhost,port=12344,guid="+Transport.genGUID();
-        PrintWriter w = new PrintWriter(new FileOutputStream("address"));
-        w.println(address);
-        w.flush();
-        w.close();
-        try (DirectConnection dc = new DirectConnection(address + ",listen=true")) {            
-            System.out.println("Connected");
-            dc.exportObject("/Test", new P2pTestServer());
-        }
+  @Override
+  public float testfloat(float[] f) {
+    System.out.println("got float: " + Arrays.toString(f));
+    return f[0];
+  }
+
+  public static void main(String[] args) throws Exception {
+    String address = DirectConnection.createDynamicTCPSession();
+    // String address = "tcp:host=localhost,port=12344,guid="+Transport.genGUID();
+    PrintWriter w = new PrintWriter(new FileOutputStream("address"));
+    w.println(address);
+    w.flush();
+    w.close();
+    try (DirectConnection dc = new DirectConnection(address + ",listen=true")) {
+      System.out.println("Connected");
+      dc.exportObject("/Test", new P2pTestServer());
     }
+  }
 }

@@ -7,12 +7,12 @@ import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestObjectSignal;
  */
 public class ObjectSignalHandler extends AbstractSignalHandler<TestObjectSignal> {
 
-    public ObjectSignalHandler(int _expectedRuns) {
-        super(_expectedRuns);
-    }
+  public ObjectSignalHandler(int _expectedRuns) {
+    super(_expectedRuns);
+  }
 
-    @Override
-    public void handleImpl(TestObjectSignal s) {
-        System.out.println(s.otherpath);
-    }
+  @Override
+  public void handleImpl(TestObjectSignal s) {
+    System.out.println(s.otherpath);
+  }
 }

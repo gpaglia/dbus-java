@@ -7,15 +7,16 @@ import org.freedesktop.dbus.interfaces.Properties.PropertiesChanged;
 
 /**
  * Subclass this abstract class for creating a callback for changed properties.
- *
+ * <p>
  * As soon as your callback is registered by calling {@link AbstractConnection#addSigHandler(Class, DBusSigHandler)},
  * all property changes by Dbus will be visible in the handle(DBusSigHandler) method of your callback class.
  */
+@SuppressWarnings("unused")
 public abstract class AbstractPropertiesChangedHandler extends AbstractSignalHandlerBase<org.freedesktop.dbus.interfaces.Properties.PropertiesChanged> {
 
-    @Override
-    public final Class<PropertiesChanged> getImplementationClass() {
-        return org.freedesktop.dbus.interfaces.Properties.PropertiesChanged.class;
-    }
+  @Override
+  public final Class<PropertiesChanged> getImplementationClass() {
+    return org.freedesktop.dbus.interfaces.Properties.PropertiesChanged.class;
+  }
 
 }

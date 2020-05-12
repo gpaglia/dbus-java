@@ -21,6 +21,7 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 //CHECKSTYLE:OFF
+@SuppressWarnings("unused")
 public interface DBus extends DBusInterface {
     int DBUS_NAME_FLAG_ALLOW_REPLACEMENT      = 0x01;
     int DBUS_NAME_FLAG_REPLACE_EXISTING       = 0x02;
@@ -54,6 +55,7 @@ public interface DBus extends DBusInterface {
     * @param name The name to release.
     * @return DBUS_RELEASE_NAME_REPLY constants.
     */
+    @SuppressWarnings("UnusedReturnValue")
     UInt32 ReleaseName(String name);
 
     /**
@@ -91,9 +93,7 @@ public interface DBus extends DBusInterface {
         public final String newOwner;
     
         public NameOwnerChanged(String path, String _name, String _oldOwner, String _newOwner) throws DBusException {
-            super(path, new Object[] {
-                    _name, _oldOwner, _newOwner
-            });
+            super(path, _name, _oldOwner, _newOwner);
             this.name = _name;
             this.oldOwner = _oldOwner;
             this.newOwner = _newOwner;
@@ -211,7 +211,7 @@ public interface DBus extends DBusInterface {
     * documentation via the D-Bus bug tracking system.<br>
     * This method is on the core DBus interface for historical reasons;<br>
     * the same information should be made available via<br>
-    * <a  href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials">the section called "<code>org.freedesktop.DBus.GetConnectionCredentials</code>”</a><br>
+    * <a  href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials">the section called "<code>org.freedesktop.DBus.GetConnectionCredentials</code>"</a><br>
     * in future.
     * 
     * @param busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
@@ -240,10 +240,10 @@ public interface DBus extends DBusInterface {
      * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
      * Gets the unique ID of the bus. The unique ID here is shared among all addresses the<br>
      * bus daemon is listening on (TCP, UNIX domain socket, etc.) and its format is described in<br>
-     * <a href="#uuids">the section called "UUIDs”</a>. <br> 
+     * <a href="#uuids">the section called "UUIDs"</a>. <br>
      * Each address the bus is listening on also has its own unique<br>
-     * ID, as described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses">the section called "Server Addresses”</a>. The per-bus and per-address IDs are not related.<br>
-     * There is also a per-machine ID, described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-peer">the section called "<code>org.freedesktop.DBus.Peer</code>”</a> and returned
+     * ID, as described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses">the section called "Server Addresses"</a>. The per-bus and per-address IDs are not related.<br>
+     * There is also a per-machine ID, described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-peer">the section called "<code>org.freedesktop.DBus.Peer</code>"</a> and returned
      * by org.freedesktop.DBus.Peer.GetMachineId().<br>
      * For a desktop session bus, the bus ID can be used as a way to uniquely identify a user's session.
      *    

@@ -103,10 +103,12 @@ public final class Hexdump {
         return sb.toString();
     }
 
+    @SuppressWarnings("unused")
     public static void print(byte[] buf) {
         print(buf, System.err);
     }
 
+    @SuppressWarnings("unused")
     public static void print(byte[] buf, int width) {
         print(buf, width, System.err);
     }
@@ -130,6 +132,7 @@ public final class Hexdump {
      * @param buf buffer
      * @return string
      */
+    @SuppressWarnings("unused")
     public static String toByteArray(byte[] buf) {
         return toByteArray(buf, 0, buf.length);
     }

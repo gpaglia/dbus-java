@@ -1,0 +1,58 @@
+plugins {
+    id 'java-library'
+    id 'java-test-fixtures'
+    id 'io.wusa.semver-git-plugin'
+    id 'maven-publish'
+    id 'io.freefair.lombok'
+}
+
+// version from git
+version = '0.0.1' //semver.info
+
+// configure sourcesets
+dependencies {
+    // platform constraints
+    api platform(project(':dbus-platform'))
+
+    // slf4j
+    api group: 'org.slf4j', name: 'slf4j-api'
+
+    // hamcrest
+    runtimeOnly group: 'ch.qos.logback', name: 'logback-classic'
+
+    // https://mvnrepository.com/artifact/com.github.hypfvieh/java-utils
+    implementation group: 'com.github.hypfvieh', name: 'java-utils'
+
+    // https://mvnrepository.com/artifact/com.github.jnr/jnr-unixsocket
+    implementation group: 'com.github.jnr', name: 'jnr-unixsocket'
+
+
+    // junit
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
+    testRuntimeOnly group: 'org.junit.platform', name:'junit-platform-launcher'
+
+    // hamcrest
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-core'
+
+    // hamcrest-optional
+    testImplementation group: 'com.github.npathai', name: 'hamcrest-optional'
+}
+
+tasks.withType(Test) {
+    environment 'DBUS_SESSION_BUS_ADDRESS', 'tcp:host=localhost,port=54321,family=ipv4'
+}
+
+// publishing
+publishing {
+    publications {
+        theFramework(MavenPublication) {
+            from components.java
+            // artifact ...
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}

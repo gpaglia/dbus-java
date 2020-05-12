@@ -16,26 +16,28 @@ import java.lang.reflect.Type;
 
 import org.freedesktop.dbus.exceptions.DBusException;
 
+@SuppressWarnings("unused")
 public class TypeSignature {
-    // CHECKSTYLE:OFF
-    String sig;
-    // CHECKSTYLE:ON
-    public TypeSignature(String _sig) {
-        this.sig = _sig;
-    }
+  // CHECKSTYLE:OFF
+  String sig;
 
-    public TypeSignature(Type[] types) throws DBusException {
-        StringBuffer sb = new StringBuffer();
-        for (Type t : types) {
-            String[] ts = Marshalling.getDBusType(t);
-            for (String s : ts) {
-                sb.append(s);
-            }
-        }
-        this.sig = sb.toString();
-    }
+  // CHECKSTYLE:ON
+  public TypeSignature(String _sig) {
+    this.sig = _sig;
+  }
 
-    public String getSig() {
-        return sig;
+  public TypeSignature(Type[] types) throws DBusException {
+    StringBuffer sb = new StringBuffer();
+    for (Type t : types) {
+      String[] ts = Marshalling.getDBusType(t);
+      for (String s : ts) {
+        sb.append(s);
+      }
     }
+    this.sig = sb.toString();
+  }
+
+  public String getSig() {
+    return sig;
+  }
 }

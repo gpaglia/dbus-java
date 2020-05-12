@@ -5,19 +5,19 @@ import org.freedesktop.dbus.messages.DBusSignal;
 
 public class GenericSignalHandler implements DBusSigHandler<DBusSignal> {
 
-    private int testRuns;
+  private int testRuns;
 
-    public GenericSignalHandler(){
-        testRuns = 0;
-    }
+  public GenericSignalHandler() {
+    testRuns = 0;
+  }
 
-    @Override
-    public void handle(DBusSignal s) {
-        testRuns++;
-        System.out.println( "GenericSignalHandler called" );
-    }
+  @Override
+  public void handle(DBusSignal s) {
+    testRuns++;
+    System.out.println("GenericSignalHandler called");
+  }
 
-    public int getActualTestRuns(){
-        return testRuns;
-    }
+  public int getActualTestRuns() {
+    return testRuns;
+  }
 }

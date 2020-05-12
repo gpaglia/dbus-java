@@ -1,0 +1,28 @@
+// settings file for micro-master project
+
+pluginManagement {
+    this.apply from: './dbus-platform/platform.gradle'
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+        jcenter()
+    }
+
+    resolutionStrategy {
+    }
+
+    //noinspection GroovyAssignabilityCheck
+    plugins {
+        id 'io.wusa.semver-git-plugin' version "${dbus__wusaSemverPluginVersion}"
+        id 'io.freefair.lombok' version "${dbus__lombokPluginVersion}"
+    }
+
+}
+
+rootProject.name = 'dbus-java-parent'
+
+include 'dbus-platform',
+        'dbus-java' /*,
+        'dbus-java-utils',
+        'dbus-java-osgi'
+        */

@@ -9,13 +9,15 @@ import org.freedesktop.dbus.messages.DBusSignal;
  */
 public class BadArraySignalHandler<T extends DBusSignal> extends AbstractSignalHandler<T> {
 
-    public BadArraySignalHandler(int _expectedRuns) {
-        super(_expectedRuns);
-    }
+  public BadArraySignalHandler(int _expectedRuns) {
+    super(_expectedRuns);
+  }
 
-    /** Handling a signal */
-    @Override
-    public void handleImpl(T s) {
-        fail("This signal handler shouldn't be called");
-    }
+  /**
+   * Handling a signal
+   */
+  @Override
+  public void handleImpl(T s) {
+    fail("This signal handler shouldn't be called");
+  }
 }

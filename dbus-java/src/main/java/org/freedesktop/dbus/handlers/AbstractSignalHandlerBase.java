@@ -5,14 +5,17 @@ import org.freedesktop.dbus.messages.DBusSignal;
 
 /**
  * Base class for all signal handling classes.
+ *
  * @author hypfvieh
  */
 public abstract class AbstractSignalHandlerBase<T extends DBusSignal> implements DBusSigHandler<T> {
 
-    /**
-     * Signal-Class which is implemented in subclasses of this class.
-     * @return Class
-     */
-    public abstract Class<T> getImplementationClass();
+  /**
+   * Signal-Class which is implemented in subclasses of this class.
+   *
+   * @return Class
+   */
+  @SuppressWarnings("unused")
+  public abstract Class<T> getImplementationClass();
 
 }

@@ -18,92 +18,98 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import org.freedesktop.dbus.annotations.Position;
 
 /**
  * This class is the super class of both Structs and Tuples
  * and holds common methods.
  */
+@Slf4j
 public abstract class Container {
-    private static Map<Type, Type[]> typecache = new HashMap<Type, Type[]>();
+  private static final Map<Type, Type[]> typecache = new HashMap<>();
 
-    static void putTypeCache(Type k, Type[] v) {
-        typecache.put(k, v);
+  static void putTypeCache(Type k, Type[] v) {
+    typecache.put(k, v);
+  }
+
+  static Type[] getTypeCache(Type k) {
+    return typecache.get(k);
+  }
+
+  private Object[] parameters = null;
+
+  Container() {
+  }
+
+  private void setup() {
+    Field[] fs = getClass().getDeclaredFields();
+    Object[] args = new Object[fs.length];
+
+    int diff = 0;
+    for (Field f : fs) {
+      Position p = f.getAnnotation(Position.class);
+      if (!f.canAccess(this) /* !f.isAccessible() */) {
+        f.setAccessible(true);
+      }
+
+      if (null == p) {
+        diff++;
+        continue;
+      }
+      try {
+        args[p.value()] = f.get(this);
+      } catch (IllegalAccessException exIa) {
+        LOGGER.error("Error in reflective access", exIa);
+      }
     }
 
-    static Type[] getTypeCache(Type k) {
-        return typecache.get(k);
+    this.parameters = new Object[args.length - diff];
+    System.arraycopy(args, 0, parameters, 0, parameters.length);
+  }
+
+  /**
+   * Returns the struct contents in order.
+   *
+   * @return object array
+   */
+  public final Object[] getParameters() {
+    if (null != parameters) {
+      return parameters;
     }
+    setup();
+    return parameters;
+  }
 
-    private Object[] parameters = null;
-
-    Container() {
+  /**
+   * Returns this struct as a string.
+   */
+  @Override
+  public final String toString() {
+    StringBuilder s = new StringBuilder(getClass().getName() + "<");
+    if (null == parameters) {
+      setup();
     }
-
-    private void setup() {
-        Field[] fs = getClass().getDeclaredFields();
-        Object[] args = new Object[fs.length];
-
-        int diff = 0;
-        for (Field f : fs) {
-            Position p = f.getAnnotation(Position.class);
-            if (!f.isAccessible()) {
-                f.setAccessible(true);
-            }
-            
-            if (null == p) {
-                diff++;
-                continue;
-            }
-            try {
-                args[p.value()] = f.get(this);
-            } catch (IllegalAccessException exIa) {
-            }
-        }
-
-        this.parameters = new Object[args.length - diff];
-        System.arraycopy(args, 0, parameters, 0, parameters.length);
+    if (0 == parameters.length) {
+      return s + ">";
     }
-
-    /**
-    * Returns the struct contents in order.
-    * @return object array
-    */
-    public final Object[] getParameters() {
-        if (null != parameters) {
-            return parameters;
-        }
-        setup();
-        return parameters;
+    for (Object o : parameters) {
+      s.append(o).append(", ");
     }
+    return s.toString().replaceAll(", $", ">");
+  }
 
-    /** Returns this struct as a string. */
-    @Override
-    public final String toString() {
-        String s = getClass().getName() + "<";
-        if (null == parameters) {
-            setup();
-        }
-        if (0 == parameters.length) {
-            return s + ">";
-        }
-        for (Object o : parameters) {
-            s += o + ", ";
-        }
-        return s.replaceAll(", $", ">");
+  @Override
+  public final boolean equals(Object other) {
+    if (other instanceof Container) {
+      Container that = (Container) other;
+      if (this.getClass().equals(that.getClass())) {
+        return Arrays.equals(this.getParameters(), that.getParameters());
+      } else {
+        return false;
+      }
+    } else {
+      return false;
     }
-
-    @Override
-    public final boolean equals(Object other) {
-        if (other instanceof Container) {
-            Container that = (Container) other;
-            if (this.getClass().equals(that.getClass())) {
-                return Arrays.equals(this.getParameters(), that.getParameters());
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
+  }
 }

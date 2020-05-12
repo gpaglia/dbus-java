@@ -23,46 +23,46 @@ import org.slf4j.LoggerFactory;
 
 public class MessageWriter implements Closeable {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private OutputStream outputStream;
+  private OutputStream outputStream;
 
-    public MessageWriter(OutputStream _out) {
-        this.outputStream = _out;
+  public MessageWriter(OutputStream _out) {
+    this.outputStream = _out;
+  }
+
+  public void writeMessage(Message m) throws IOException {
+    logger.debug("<= {}", m);
+    if (null == m) {
+      return;
+    }
+    if (null == m.getWireData()) {
+      logger.warn("Message {} wire-data was null!", m);
+      return;
     }
 
-    public void writeMessage(Message m) throws IOException {
-        logger.debug("<= {}", m);
-        if (null == m) {
-            return;
-        }
-        if (null == m.getWireData()) {
-            logger.warn("Message {} wire-data was null!", m);
-            return;
-        }
-
-        for (byte[] buf : m.getWireData()) {
-            if(logger.isTraceEnabled()) {
-                logger.trace("{}", null == buf ? "" : Hexdump.format(buf));
-            }
-            if (null == buf) {
-                break;
-            }
-            outputStream.write(buf);
-        }
-        outputStream.flush();
+    for (byte[] buf : m.getWireData()) {
+      if (logger.isTraceEnabled()) {
+        logger.trace("{}", null == buf ? "" : Hexdump.format(buf));
+      }
+      if (null == buf) {
+        break;
+      }
+      outputStream.write(buf);
     }
+    outputStream.flush();
+  }
 
-    @Override
-    public void close() throws IOException {
-        logger.debug("Closing Message Writer");
-        if (outputStream != null) {
-            outputStream.close();
-        }
-        outputStream = null;
+  @Override
+  public void close() throws IOException {
+    logger.debug("Closing Message Writer");
+    if (outputStream != null) {
+      outputStream.close();
     }
+    outputStream = null;
+  }
 
-    public boolean isClosed() {
-        return outputStream == null;
-    }
+  public boolean isClosed() {
+    return outputStream == null;
+  }
 }

@@ -19,30 +19,30 @@ import java.lang.ref.WeakReference;
  * that behaviour.
  */
 public class StrongReference<T> extends WeakReference<T> {
-    private T referant;
+  private T referant;
 
-    public StrongReference(T _referant) {
-        super(_referant);
-        this.referant = _referant;
-    }
+  public StrongReference(T _referant) {
+    super(_referant);
+    this.referant = _referant;
+  }
 
-    @Override
-    public void clear() {
-        referant = null;
-    }
+  @Override
+  public void clear() {
+    referant = null;
+  }
 
-    @Override
-    public boolean enqueue() {
-        return false;
-    }
+  @Override
+  public boolean enqueue() {
+    return false;
+  }
 
-    @Override
-    public T get() {
-        return referant;
-    }
+  @Override
+  public T get() {
+    return referant;
+  }
 
-    @Override
-    public boolean isEnqueued() {
-        return false;
-    }
+  @Override
+  public boolean isEnqueued() {
+    return false;
+  }
 }
