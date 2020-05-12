@@ -7,7 +7,7 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
  */
 @SuppressWarnings("serial")
 public class AccessDenied extends DBusExecutionException {
-    public AccessDenied(String message) {
-        super(message);
-    }
+  public AccessDenied(String message) {
+    super(message);
+  }
 }

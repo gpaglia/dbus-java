@@ -8,9 +8,10 @@ import java.lang.annotation.Target;
 /**
  * Give an error that the method can return
  */
+@SuppressWarnings("unused")
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @DBusInterfaceName("org.freedesktop.DBus.Method.Error")
 public @interface MethodError {
-    String value();
+  String value();
 }

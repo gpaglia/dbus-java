@@ -26,51 +26,53 @@ import org.freedesktop.dbus.types.Variant;
 @IntrospectionDescription("An example remote interface")
 @DBusInterfaceName("org.freedesktop.dbus.test.AlternateTestInterface")
 public interface SampleRemoteInterface2 extends DBusInterface {
-    @IntrospectionDescription("Test multiple return values and implicit variant parameters.")
-    <A> SampleTuple<String, List<Integer>, Boolean> show(A in);
+  @IntrospectionDescription("Test multiple return values and implicit variant parameters.")
+  <A> SampleTuple<String, List<Integer>, Boolean> show(A in);
 
-    @IntrospectionDescription("Test passing structs and explicit variants, returning implicit variants")
-    <T> T dostuff(SampleStruct foo);
+  @SuppressWarnings("unused")
+  @IntrospectionDescription("Test passing structs and explicit variants, returning implicit variants")
+  <T> T dostuff(SampleStruct foo);
 
-    @IntrospectionDescription("Test arrays, boxed arrays and lists.")
-    List<Integer> sampleArray(List<String> l, Integer[] is, long[] ls);
+  @IntrospectionDescription("Test arrays, boxed arrays and lists.")
+  List<Integer> sampleArray(List<String> l, Integer[] is, long[] ls);
 
-    @IntrospectionDescription("Test passing objects as object paths.")
-    DBusInterface getThis(DBusInterface t);
+  @IntrospectionDescription("Test passing objects as object paths.")
+  DBusInterface getThis(DBusInterface t);
 
-    @IntrospectionDescription("Test bools work")
-    @DBusMemberName("checkbool")
-    boolean check();
+  @IntrospectionDescription("Test bools work")
+  @DBusMemberName("checkbool")
+  boolean check();
 
-    @IntrospectionDescription("Test Serializable Object")
-    SampleSerializable<String> testSerializable(byte b, SampleSerializable<String> s, int i);
+  @IntrospectionDescription("Test Serializable Object")
+  SampleSerializable<String> testSerializable(byte b, SampleSerializable<String> s, int i);
 
-    @IntrospectionDescription("Call another method on itself from within a call")
-    String recursionTest();
+  @IntrospectionDescription("Call another method on itself from within a call")
+  String recursionTest();
 
-    @IntrospectionDescription("Parameter-overloaded method (string)")
-    int overload(String s);
+  @IntrospectionDescription("Parameter-overloaded method (string)")
+  int overload(String s);
 
-    @IntrospectionDescription("Parameter-overloaded method (byte)")
-    int overload(byte b);
+  @IntrospectionDescription("Parameter-overloaded method (byte)")
+  int overload(byte b);
 
-    @IntrospectionDescription("Parameter-overloaded method (void)")
-    int overload();
+  @IntrospectionDescription("Parameter-overloaded method (void)")
+  int overload();
 
-    @IntrospectionDescription("Nested List Check")
-    List<List<Integer>> checklist(List<List<Integer>> lli);
+  @IntrospectionDescription("Nested List Check")
+  List<List<Integer>> checklist(List<List<Integer>> lli);
 
-    @IntrospectionDescription("Get new objects as object paths.")
-    SampleNewInterface getNew();
+  @IntrospectionDescription("Get new objects as object paths.")
+  SampleNewInterface getNew();
 
-    @IntrospectionDescription("Test Complex Variants")
-    void complexv(Variant<? extends Object> v);
+  @IntrospectionDescription("Test Complex Variants")
+  void complexv(Variant<?> v);
 
-    //CHECKSTYLE:OFF
-    @IntrospectionDescription("Test Introspect on a different interface")
-    String Introspect();
-    //CHECKSTYLE:ON
-    
-    @IntrospectionDescription("Returns the given struct")
-    SampleStruct returnSamplestruct( SampleStruct struct );
+  //CHECKSTYLE:OFF
+  @IntrospectionDescription("Test Introspect on a different interface")
+  String Introspect();
+  //CHECKSTYLE:ON
+
+  @SuppressWarnings("unused")
+  @IntrospectionDescription("Returns the given struct")
+  SampleStruct returnSamplestruct(SampleStruct struct);
 }

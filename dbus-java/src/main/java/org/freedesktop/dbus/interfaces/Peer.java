@@ -7,7 +7,7 @@ import org.freedesktop.dbus.annotations.DBusInterfaceName;
  */
 @DBusInterfaceName("org.freedesktop.DBus.Peer")
 public interface Peer extends DBusInterface {
-    void Ping();
+  void Ping();
 
-    String GetMachineId();
+  String GetMachineId();
 }

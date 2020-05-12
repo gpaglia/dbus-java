@@ -19,4 +19,11 @@ ext {
     // hamcrest-optional version
     dbus__hamcrestOptionalVersion = '2.0.0'
 
+    // https://mvnrepository.com/artifact/com.github.hypfvieh/java-utils
+    dbus__hypfviehUtilsVersion = '1.0.6'
+
+    // https://mvnrepository.com/artifact/com.github.jnr/jnr-unixsocket
+    dbus__unixSocketVersion = '0.30'
+
+
 }

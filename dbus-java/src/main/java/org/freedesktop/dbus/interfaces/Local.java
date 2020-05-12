@@ -9,9 +9,9 @@ import org.freedesktop.dbus.messages.DBusSignal;
  */
 @DBusInterfaceName("org.freedesktop.DBus.Local")
 public interface Local extends DBusInterface {
-    class Disconnected extends DBusSignal {
-        public Disconnected(String path) throws DBusException {
-            super(path);
-        }
+  class Disconnected extends DBusSignal {
+    public Disconnected(String path) throws DBusException {
+      super(path);
     }
+  }
 }

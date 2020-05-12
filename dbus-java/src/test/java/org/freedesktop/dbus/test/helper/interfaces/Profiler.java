@@ -21,29 +21,30 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.test.helper.structs.ProfileStruct;
 
 public interface Profiler extends DBusInterface {
-    class ProfileSignal extends DBusSignal {
-        public ProfileSignal(String path) throws DBusException {
-            super(path);
-        }
+  class ProfileSignal extends DBusSignal {
+    public ProfileSignal(String path) throws DBusException {
+      super(path);
     }
+  }
 
-    void array(int[] v);
+  void array(int[] v);
 
-    void stringarray(String[] v);
+  void stringarray(String[] v);
 
-    void map(Map<String, String> m);
+  void map(Map<String, String> m);
 
-    void list(List<String> l);
+  void list(List<String> l);
 
-    void bytes(byte[] b);
+  void bytes(byte[] b);
 
-    void struct(ProfileStruct ps);
+  void struct(ProfileStruct ps);
 
-    void string(String s);
+  void string(String s);
 
-    //CHECKSTYLE:OFF
-    void NoReply();
+  //CHECKSTYLE:OFF
+  @SuppressWarnings("unused")
+  void NoReply();
 
-    void Pong();
-    //CHECKSTYLE:ON
+  void Pong();
+  //CHECKSTYLE:ON
 }

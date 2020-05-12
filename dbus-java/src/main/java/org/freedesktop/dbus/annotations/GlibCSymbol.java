@@ -8,9 +8,10 @@ import java.lang.annotation.Target;
 /**
  * Define a C symbol to map to this method. Used by GLib only
  */
+@SuppressWarnings("ALL")
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @DBusInterfaceName("org.freedesktop.DBus.GLib.CSymbol")
 public @interface GlibCSymbol {
-    String value();
+  String value();
 }

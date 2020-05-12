@@ -18,8 +18,8 @@ import org.freedesktop.dbus.exceptions.DBusException;
  * Custom classes may be sent over DBus if they implement this interface.
  * <p>
  * In addition to the serialize method, classes <b>MUST</b> implement a deserialize method which returns null and takes
- * as it's arguments all the DBus types the class will be serialied to <i>in order</i> and <i>with type
- * parameterisation</i>. They <b>MUST</b> also provide a zero-argument constructor.
+ * as it's arguments all the DBus types the class will be serialized to <i>in order</i> and <i>with type
+ * parameterization</i>. They <b>MUST</b> also provide a zero-argument constructor.
  * </p>
  * <p>
  * The serialize method should return the class properties you wish to serialize, correctly formatted for the wire
@@ -31,5 +31,5 @@ import org.freedesktop.dbus.exceptions.DBusException;
  * </p>
  */
 public interface DBusSerializable {
-    Object[] serialize() throws DBusException;
+  Object[] serialize() throws DBusException;
 }

@@ -7,13 +7,15 @@ import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestEmptySignal;
  */
 public class EmptySignalHandler extends AbstractSignalHandler<TestEmptySignal> {
 
-    public EmptySignalHandler(int _expectedRuns) {
-        super(_expectedRuns);
-    }
+  public EmptySignalHandler(int _expectedRuns) {
+    super(_expectedRuns);
+  }
 
-    /** Handling a signal */
-    @Override
-    public void handleImpl(TestEmptySignal t) {
-        System.out.println("EmptySignalHandler called");
-    }
+  /**
+   * Handling a signal
+   */
+  @Override
+  public void handleImpl(TestEmptySignal t) {
+    System.out.println("EmptySignalHandler called");
+  }
 }

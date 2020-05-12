@@ -7,13 +7,15 @@ import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestPathSignal;
  */
 public class PathSignalHandler extends AbstractSignalHandler<TestPathSignal> {
 
-    public PathSignalHandler(int _expectedRuns) {
-        super(_expectedRuns);
-    }
+  public PathSignalHandler(int _expectedRuns) {
+    super(_expectedRuns);
+  }
 
-    /** Handling a signal */
-    @Override
-    public void handleImpl(TestPathSignal t) {
-        System.out.println("Path sighandler: " + t);
-    }
+  /**
+   * Handling a signal
+   */
+  @Override
+  public void handleImpl(TestPathSignal t) {
+    System.out.println("Path sighandler: " + t);
+  }
 }
