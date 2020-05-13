@@ -133,7 +133,7 @@ class TestEmptyCollections {
     serverImpl = null;
 
     // give the dbus daemon some time to unregister our calls before restarting test
-    Utils.sleep(300L);
+    Utils.sleep(500L);
   }
 
   /**
