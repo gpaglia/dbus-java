@@ -35,8 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.freedesktop.DBus;
 import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.MessageReader;
-import org.freedesktop.dbus.MessageWriter;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DirectConnection;
 import org.freedesktop.dbus.connections.transports.TransportFactory;
@@ -51,6 +49,8 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.messages.MethodReturn;
+import org.freedesktop.dbus.spi.InputStreamMessageReader;
+import org.freedesktop.dbus.spi.OutputStreamMessageWriter;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 import org.slf4j.Logger;
@@ -59,6 +59,7 @@ import org.slf4j.LoggerFactory;
 import jnr.unixsocket.UnixSocket;
 
 // TODO: review completely the architecture
+
 /**
  * A replacement DBusDaemon
  */
@@ -68,23 +69,25 @@ public class DBusDaemon extends Thread implements Closeable {
   public static final int QUEUE_POLL_WAIT = 500;
 
   static class Connstruct {
+    // CHECKSTYLE:OFF
     public UnixSocket usock;
     public Socket tsock;
-    public MessageReader min;
-    public MessageWriter mout;
+    public InputStreamMessageReader min;
+    public OutputStreamMessageWriter mout;
     public String unique;
+    // CHECKSTYLE:ON
 
     @SuppressWarnings("unused")
     Connstruct(UnixSocket sock) throws IOException {
       this.usock = sock;
-      min = new MessageReader(sock.getInputStream());
-      mout = new MessageWriter(sock.getOutputStream());
+      min = new InputStreamMessageReader(sock.getInputStream());
+      mout = new OutputStreamMessageWriter(sock.getOutputStream());
     }
 
     Connstruct(Socket sock) throws IOException {
       this.tsock = sock;
-      min = new MessageReader(sock.getInputStream());
-      mout = new MessageWriter(sock.getOutputStream());
+      min = new InputStreamMessageReader(sock.getInputStream());
+      mout = new OutputStreamMessageWriter(sock.getOutputStream());
     }
 
     @Override
@@ -165,7 +168,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
 
     private Connstruct c;
-    @SuppressWarnings("FieldCanBeLocal")
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private Message m;
 
     @Override
@@ -178,6 +181,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
       SRV_LOGGER.debug("enter");
 
+      //noinspection SynchronizeOnNonFinalField
       synchronized (c) {
         if (null != c.unique) {
           throw new org.freedesktop.dbus.errors.AccessDenied("Connection has already sent a Hello message");

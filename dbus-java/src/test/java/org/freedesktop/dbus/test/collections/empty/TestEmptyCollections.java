@@ -22,6 +22,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import lombok.extern.slf4j.Slf4j;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -66,13 +67,14 @@ import org.slf4j.LoggerFactory;
  * This interface returns the {@link IEmptyCollectionStruct#getStringTestValue()} that value can be
  * used to determine whether (de)serialization of non empty collection is executed correctly.
  */
+@Slf4j
 class TestEmptyCollections {
 
   private DBusConnection serverconn;
   private DBusConnection clientconn;
   private ISampleCollectionInterface clientObj;
 
-  ISampleCollectionInterface serverImpl;
+  private ISampleCollectionInterface serverImpl;
 
   private static final TestDaemonFixtures fixt = new TestDaemonFixtures();
 
@@ -89,14 +91,21 @@ class TestEmptyCollections {
   @BeforeEach
   public void setUp() {
     try {
+      LOGGER.trace("[Test] getting server conn");
       serverconn = DBusConnection.getConnection(DBusBusType.SESSION);
+      LOGGER.trace("[Test] getting client conn");
       clientconn = DBusConnection.getConnection(DBusBusType.SESSION);
+      LOGGER.trace("[Test] setting server conn weak refs");
       serverconn.setWeakReferences(true);
+      LOGGER.trace("[Test] setting client conn weak refs");
       clientconn.setWeakReferences(true);
 
       // This exports an instance of the test class as the object /Test.
+      LOGGER.trace("[Test] creating SampleCollectionImpl");
       serverImpl = new SampleCollectionImpl();
+      LOGGER.trace("[Test] exporting SampleCollectionImpl");
       serverconn.exportObject(serverImpl.getObjectPath(), serverImpl);
+      LOGGER.trace("[Test] getting remote obj");
       clientObj = clientconn.getRemoteObject(
           serverconn.getUniqueName(),
           serverImpl.getObjectPath(),

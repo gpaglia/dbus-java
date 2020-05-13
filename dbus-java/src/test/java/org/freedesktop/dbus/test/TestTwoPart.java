@@ -21,6 +21,7 @@ import java.io.IOException;
 @SuppressWarnings("BusyWait")
 public class TestTwoPart {
 
+  private volatile boolean testDone = false;
   private volatile boolean serverReady = false;
 
   private static final TestDaemonFixtures fixt = new TestDaemonFixtures();
@@ -70,12 +71,15 @@ public class TestTwoPart {
 
       try {
         Thread.sleep(1000);
-      } catch (InterruptedException ignored) { }
+      } catch (InterruptedException ignored) {
+      }
 
       conn.disconnect();
     } catch (DBusException _ex) {
       _ex.printStackTrace();
       fail("Exception in client");
+    } finally {
+      testDone = true;
     }
   }
 
@@ -91,12 +95,11 @@ public class TestTwoPart {
         conn.exportObject("/", server);
         conn.addSigHandler(TwoPartInterface.TwoPartSignal.class, server);
         serverReady = true;
-        boolean testDone = false;
-        //noinspection ConstantConditions
         while (!testDone) {
           try {
             Thread.sleep(500L);
-          } catch (InterruptedException ignored) { }
+          } catch (InterruptedException ignored) {
+          }
         }
       } catch (DBusException _ex) {
         _ex.printStackTrace();

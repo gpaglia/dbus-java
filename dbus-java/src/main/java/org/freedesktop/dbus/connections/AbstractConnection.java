@@ -1062,6 +1062,7 @@ public abstract class AbstractConnection implements Closeable {
         return null;
       }
       if (run) {
+        LOGGER.error("Error reading incoming from connection", exIo);
         throw new FatalDBusException(exIo.getMessage());
       } // if run is false, suppress all exceptions - the connection either is already disconnected or should be disconnected right now
     }

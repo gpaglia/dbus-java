@@ -18,7 +18,9 @@
     <logger name="org.freedesktop.dbus.MessageWriter" level="INFO" />
     <logger name="org.freedesktop.dbus.connections.SASL" level="INFO" />
     
-    <logger name="org.freedesktop.dbus.bin" level="TRACE" />
+    <logger name="org.freedesktop.dbus.bin" level="INFO" />
+    <logger name="org.freedesktop.dbus.spi" level="INFO" />
+    <logger name="org.freedesktop.dbus.test.collections.empty" level="INFO" />
 
     <logger name="org.freedesktop.dbus" level="INFO" />
 
