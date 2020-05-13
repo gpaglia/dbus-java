@@ -22,30 +22,35 @@ public class UnixSocketTransport extends AbstractTransport {
   private final UnixSocketAddress unixSocketAddress;
   private UnixServerSocketChannel unixServerSocket;
 
-  UnixSocketTransport(BusAddress _address) throws IOException {
-    super(_address);
+    UnixSocketTransport(BusAddress _address) throws IOException {
+        super(_address);
 
-    if (_address.isAbstract()) {
-      unixSocketAddress = new UnixSocketAddress("\0" + _address.getAbstract());
-    } else if (_address.hasPath()) {
-      unixSocketAddress = new UnixSocketAddress(_address.getPath());
-    } else {
-      throw new IOException("Unix socket url has to specify 'path' or 'abstract'");
+        if (_address.isAbstract()) {
+            unixSocketAddress = new UnixSocketAddress("\0" + _address.getAbstract());
+        } else if (_address.hasPath()) {
+            unixSocketAddress = new UnixSocketAddress(_address.getPath());
+        } else {
+            throw new IOException("Unix socket url has to specify 'path' or 'abstract'");
+        }
+
+        setSaslAuthMode(SASL.AUTH_EXTERNAL);
     }
 
-    setSaslAuthMode(SASL.AUTH_EXTERNAL);
-  }
+    @Override
+    boolean hasFileDescriptorSupport() {
+        return true; // file descriptor passing allowed when using UNIX_SOCK
+    }
 
-  /**
-   * Establish a connection to DBus using unix sockets.
-   *
-   * @throws IOException on error
-   */
-  @Override
-  void connect() throws IOException {
-    UnixSocketChannel us;
-    if (getAddress().isListeningSocket()) {
-      unixServerSocket = UnixServerSocketChannel.open();
+    /**
+     * Establish a connection to DBus using unix sockets.
+     *
+     * @throws IOException on error
+     */
+    @Override
+    void connect() throws IOException {
+        UnixSocketChannel us;
+        if (getAddress().isListeningSocket()) {
+            unixServerSocket = UnixServerSocketChannel.open();
 
       unixServerSocket.socket().bind(unixSocketAddress);
       us = unixServerSocket.accept();
@@ -53,28 +58,26 @@ public class UnixSocketTransport extends AbstractTransport {
       us = UnixSocketChannel.open(unixSocketAddress);
     }
 
-    us.configureBlocking(true);
+        us.configureBlocking(true);
 
-    // MacOS doesn't support SO_PASSCRED
-    if (!SystemUtil.isMacOs()) {
-      us.setOption(UnixSocketOptions.SO_PASSCRED, true);
+        // MacOS doesn't support SO_PASSCRED
+        if (!SystemUtil.isMacOs()) {
+            us.setOption(UnixSocketOptions.SO_PASSCRED, true);
+        }
+
+        authenticate(us.socket().getOutputStream(), us.socket().getInputStream(), us.socket());
+
+        setInputOutput(us.socket());
     }
 
-    setOutputWriter(us.socket().getOutputStream());
-    setInputReader(us.socket().getInputStream());
+    @Override
+    public void close() throws IOException {
+        getLogger().debug("Disconnecting Transport");
 
-    authenticate(us.socket().getOutputStream(), us.socket().getInputStream(), us.socket());
-  }
+        if (unixServerSocket != null && unixServerSocket.isOpen()) {
+            unixServerSocket.close();
+        }
 
-
-  @Override
-  public void close() throws IOException {
-    getLogger().debug("Disconnecting Transport");
-
-    if (unixServerSocket != null && unixServerSocket.isOpen()) {
-      unixServerSocket.close();
+        super.close();
     }
-
-    super.close();
-  }
 }

@@ -24,11 +24,12 @@ import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
 import org.freedesktop.dbus.types.Variant;
 
-import java.io.FileDescriptor;
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.*;
+
 
 /**
  * Superclass of all messages which are sent over the Bus. This class deals with all the marshalling to/from the wire
@@ -36,6 +37,10 @@ import java.util.*;
  */
 @Slf4j
 public class Message {
+  public static final int MAXIMUM_ARRAY_LENGTH = 67108864;
+  public static final int MAXIMUM_MESSAGE_LENGTH = MAXIMUM_ARRAY_LENGTH * 2;
+  @SuppressWarnings("unused")
+  public static final int MAXIMUM_NUM_UNIX_FDS = MAXIMUM_MESSAGE_LENGTH / 4;
   /**
    * The current protocol major version.
    */
@@ -71,6 +76,8 @@ public class Message {
   private byte[][] wiredata;
   private long bytecounter;
   private final Map<Byte, Object> headers;
+  private List<FileDescriptor> filedescriptors;
+
 
   private long serial;
   private byte type;
@@ -110,6 +117,8 @@ public class Message {
         return "Sender";
       case HeaderField.SIGNATURE:
         return "Signature";
+      case HeaderField.UNIX_FDS:
+        return "Unix FD";
       default:
         return "Invalid";
     }
@@ -126,6 +135,7 @@ public class Message {
   protected Message(byte endian, byte _type, byte _flags) throws DBusException {
     wiredata = new byte[BUFFERINCREMENT][];
     headers = new HashMap<>();
+    filedescriptors = new ArrayList<>();
     big = (Endian.BIG == endian);
     bytecounter = 0;
     synchronized (Message.class) {
@@ -146,6 +156,7 @@ public class Message {
   protected Message() {
     wiredata = new byte[BUFFERINCREMENT][];
     headers = new HashMap<>();
+    filedescriptors = new ArrayList<>();
     bytecounter = 0;
   }
 
@@ -157,7 +168,7 @@ public class Message {
    * @param _body    D-Bus serialized data of the signature defined in headers.
    */
   @SuppressWarnings("unchecked")
-  void populate(byte[] _msg, byte[] _headers, byte[] _body) throws DBusException {
+  void populate(byte[] _msg, byte[] _headers, byte[] _body, List<FileDescriptor> descriptors) throws DBusException {
     big = (_msg[0] == Endian.BIG);
     type = _msg[1];
     flags = _msg[2];
@@ -170,6 +181,7 @@ public class Message {
     bodylen = ((Number) extract(Message.ArgumentType.UINT32_STRING, _msg, 4)[0]).longValue();
     serial = ((Number) extract(Message.ArgumentType.UINT32_STRING, _msg, 8)[0]).longValue();
     bytecounter = _msg.length + _headers.length + _body.length;
+    filedescriptors = descriptors;
 
     LOGGER.trace("Message header: {}", Hexdump.toAscii(_headers));
     Object[] hs = extract("a(yv)", _headers, 0);
@@ -414,6 +426,11 @@ public class Message {
     return wiredata;
   }
 
+  @SuppressWarnings("unused")
+  public List<FileDescriptor> getFiledescriptors() {
+    return filedescriptors;
+  }
+
   /**
    * Formats the message in a human-readable format.
    */
@@ -555,8 +572,9 @@ public class Message {
           appendint(((Number) data).shortValue(), 2);
           break;
         case ArgumentType.FILEDESCRIPTOR:
-          int x = getFileDescriptor((FileDescriptor) data);
-          appendint(((Number) x).longValue(), 4);
+          filedescriptors.add((FileDescriptor) data);
+          appendint(filedescriptors.size() - 1, 4);
+          LOGGER.debug("Just inserted {} as filedescriptor", filedescriptors.size() - 1);
           break;
         case ArgumentType.STRING:
         case ArgumentType.OBJECT_PATH:
@@ -969,7 +987,7 @@ public class Message {
         _offsets[OFFSET_DATA] = newofs[OFFSET_DATA];
         break;
       case ArgumentType.FILEDESCRIPTOR:
-        rv = createFileDescriptorByReflection(demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4));
+        rv = filedescriptors.get((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4));
         _offsets[OFFSET_DATA] += 4;
         break;
       case ArgumentType.STRING:
@@ -1000,30 +1018,6 @@ public class Message {
       }
     }
     return rv;
-  }
-
-  private int getFileDescriptor(FileDescriptor _data) throws MarshallingException {
-    Field declaredField;
-    try {
-      declaredField = _data.getClass().getDeclaredField("fd");
-      declaredField.setAccessible(true);
-      return declaredField.getInt(_data);
-    } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException _ex) {
-      LOGGER.error("Could not get filedescriptor by reflection.", _ex);
-      throw new MarshallingException("Could not get member 'fd' of FileDescriptor by reflection!", _ex);
-    }
-  }
-
-  private FileDescriptor createFileDescriptorByReflection(long _demarshallint) throws MarshallingException {
-    try {
-      Constructor<FileDescriptor> constructor = FileDescriptor.class.getDeclaredConstructor(int.class);
-      constructor.setAccessible(true);
-      return constructor.newInstance((int) _demarshallint);
-    } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException _ex) {
-      LOGGER.error("Could not create new FileDescriptor instance by reflection.", _ex);
-      throw new MarshallingException("Could not create new FileDescriptor instance by reflection", _ex);
-    }
   }
 
   private Object optimizePrimitives(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, long size, byte algn,
@@ -1300,6 +1294,20 @@ public class Message {
   }
 
   /**
+   * Type of this message.
+   *
+   * @return byte
+   */
+  public byte getType() {
+    return type;
+  }
+
+  @SuppressWarnings("unused")
+  public byte getEndianess() {
+    return big ? Endian.BIG : Endian.LITTLE;
+  }
+
+  /**
    * Defines constants representing the flags which can be set on a message.
    */
   public interface Flags {
@@ -1330,6 +1338,7 @@ public class Message {
     byte DESTINATION = 6;
     byte SENDER = 7;
     byte SIGNATURE = 8;
+    byte UNIX_FDS = 9;
   }
 
   /**

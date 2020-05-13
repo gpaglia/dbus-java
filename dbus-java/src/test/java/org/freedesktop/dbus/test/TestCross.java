@@ -84,7 +84,7 @@ public class TestCross {
         }
       }
 
-    } catch (DBusException | IOException exDbe) {
+    } catch (DBusException exDbe) {
       exDbe.printStackTrace();
       fail("Exception while processing DBus");
     }
@@ -108,7 +108,7 @@ public class TestCross {
           try {
             //cts.wait();
             Thread.sleep(500L);
-          } catch (InterruptedException exIe) {
+          } catch (InterruptedException ignored) {
           }
         }
         for (String s : cts.getDone()) {
@@ -119,7 +119,7 @@ public class TestCross {
         }
         conn.disconnect();
         assertTrue(cts.getNotdone().isEmpty(), "All tests should have been run, following failed: " + String.join(", ", cts.getNotdone()));
-      } catch (DBusException | IOException exDe) {
+      } catch (DBusException exDe) {
         exDe.printStackTrace();
         fail("Exception while server running");
       }

@@ -15,10 +15,12 @@ public class TestDaemonFixtures {
     if (address == null) {
       throw new DBusException("DBUS_SESSION_BUS_ADDRESS not set");
     }
-
+/*
     if (! address.toLowerCase().contains("listen")) {
       address = address + ",listen=true";
     }
+
+ */
     daemon = new EmbeddedDBusDaemon();
     daemon.setAddress(address);
     daemon.startInBackground();

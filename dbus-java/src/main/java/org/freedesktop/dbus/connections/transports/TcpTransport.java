@@ -26,26 +26,29 @@ public class TcpTransport extends AbstractTransport {
     setSaslAuthMode(SASL.AUTH_SHA);
   }
 
-  /**
-   * Connect to DBus using TCP.
-   *
-   * @throws IOException on error
-   */
-  void connect() throws IOException {
-
-    if (getAddress().isListeningSocket()) {
-      try (ServerSocket ss = new ServerSocket()) {
-        ss.bind(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()));
-        socket = ss.accept();
-      }
-    } else {
-      socket = new Socket();
-      getLogger().trace("Setting timeout to {} on Socket", timeout);
-      socket.connect(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()), timeout);
+    @Override
+    boolean hasFileDescriptorSupport() {
+        return false; // file descriptor passing not possible on TCP connections
     }
 
-    setInputReader(socket.getInputStream());
-    setOutputWriter(socket.getOutputStream());
+    /**
+     * Connect to DBus using TCP.
+     * @throws IOException on error
+     */
+    void connect() throws IOException {
+
+        if (getAddress().isListeningSocket()) {
+            try (ServerSocket ss = new ServerSocket()) {
+                ss.bind(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()));
+                socket = ss.accept();
+            }
+        } else {
+            socket = new Socket();
+            getLogger().trace("Setting timeout to {} on Socket", timeout);
+            socket.connect(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()), timeout);
+        }
+
+        setInputOutput(socket);
 
     authenticate(socket.getOutputStream(), socket.getInputStream(), socket);
   }

@@ -15,16 +15,16 @@ package org.freedesktop.dbus.messages;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import org.freedesktop.Hexdump;
+import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.freedesktop.dbus.types.UInt32;
 
+@Slf4j
 public class MethodCall extends Message {
-
-  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   MethodCall() {
   }
@@ -84,7 +84,7 @@ public class MethodCall extends Message {
     });
 
     if (null != sig) {
-      logger.debug("Appending arguments with signature: {}", sig);
+      LOGGER.debug("Appending arguments with signature: {}", sig);
       hargs.add(new Object[]{
           Message.HeaderField.SIGNATURE, new Object[]{
           ArgumentType.SIGNATURE_STRING, sig
@@ -94,21 +94,39 @@ public class MethodCall extends Message {
       setArgs(args);
     }
 
-    byte[] blen = new byte[4];
-    appendBytes(blen);
-    append("ua(yv)", getSerial(), hargs.toArray());
-    pad((byte) 8);
+        int totalFileDes = 0;
+        if( args != null ){
+          for (Object arg : args) {
+            if (arg instanceof FileDescriptor) {
+              totalFileDes++;
+            }
+          }
+        }
+
+        if( totalFileDes > 0 ){
+            getHeaders().put(Message.HeaderField.UNIX_FDS, totalFileDes);
+            hargs.add(new Object[]{
+                    Message.HeaderField.UNIX_FDS, new Object[]{
+                    ArgumentType.UINT32_STRING, new UInt32( totalFileDes )
+                }
+            });
+        }
+
+        byte[] blen = new byte[4];
+        appendBytes(blen);
+        append("ua(yv)", getSerial(), hargs.toArray());
+        pad((byte) 8);
 
     long c = getByteCounter();
     if (null != sig) {
       append(sig, args);
     }
-    logger.debug("Appended body, type: {} start: {} end: {} size: {}", sig, c, getByteCounter(), (getByteCounter() - c));
+    LOGGER.debug("Appended body, type: {} start: {} end: {} size: {}", sig, c, getByteCounter(), (getByteCounter() - c));
     marshallint(getByteCounter() - c, blen, 0, 4);
-    logger.debug("marshalled size ({}): {}", blen, Hexdump.format(blen));
+    LOGGER.debug("marshalled size ({}): {}", blen, Hexdump.format(blen));
   }
 
-  private static long REPLY_WAIT_TIMEOUT = 20000;
+    private static long REPLY_WAIT_TIMEOUT = 200000;
 
   /**
    * Set the default timeout for method calls.
@@ -137,7 +155,7 @@ public class MethodCall extends Message {
    */
   @SuppressWarnings("unused")
   public synchronized Message getReply(long timeout) {
-    logger.trace("Blocking on {}", this);
+    LOGGER.trace("Blocking on {}", this);
     if (null != reply) {
       return reply;
     }
@@ -156,7 +174,7 @@ public class MethodCall extends Message {
    * @return The reply to this MethodCall, or null if a timeout happens.
    */
   public synchronized Message getReply() {
-    logger.trace("Blocking on {}", this);
+      LOGGER.trace("Blocking on {}", this);
 
     if (null != reply) {
       return reply;
@@ -170,7 +188,7 @@ public class MethodCall extends Message {
   }
 
   public synchronized void setReply(Message _reply) {
-    logger.trace("Setting reply to {} to {}", this, _reply);
+      LOGGER.trace("Setting reply to {} to {}", this, _reply);
     this.reply = _reply;
     notifyAll();
   }

@@ -10,24 +10,23 @@
    Full licence texts are included in the LICENSE file with this program.
 */
 
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.spi;
 
 import java.io.BufferedInputStream;
-import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
 
+import lombok.extern.slf4j.Slf4j;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageProtocolVersionException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MessageFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class MessageReader implements Closeable {
-  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+
+@Slf4j
+public class InputStreamMessageReader implements IMessageReader {
 
   private InputStream inputStream;
   private byte[] buf = null;
@@ -36,7 +35,7 @@ public class MessageReader implements Closeable {
   private byte[] body = null;
   private final int[] len = new int[4];
 
-  public MessageReader(InputStream _in) {
+  public InputStreamMessageReader(InputStream _in) {
     this.inputStream = new BufferedInputStream(_in);
   }
 
@@ -157,7 +156,7 @@ public class MessageReader implements Closeable {
 
     Message m;
     try {
-      m = MessageFactory.createMessage(type, buf, header, body);
+      m = MessageFactory.createMessage(type, buf, header, body, null);
     } catch (DBusException | RuntimeException dbe) {
       LOGGER.debug("", dbe);
       buf = null;
@@ -167,7 +166,7 @@ public class MessageReader implements Closeable {
       throw dbe;
     } // this really smells badly!
 
-      LOGGER.debug("=> {}", m);
+    LOGGER.debug("=> {}", m);
     buf = null;
     tbuf = null;
     body = null;
@@ -184,6 +183,7 @@ public class MessageReader implements Closeable {
     inputStream = null;
   }
 
+  @Override
   public boolean isClosed() {
     return inputStream == null;
   }
