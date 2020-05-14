@@ -14,7 +14,7 @@ allprojects { Project prj ->
             branches {
                 branch {
                     regex = ".+"
-                    incrementer = "PATCH_INCREMENTER"
+                    incrementer = "MINOR_INCREMENTER"
                     formatter = {
                         "${semver.info.version.major}.${semver.info.version.minor}.${semver.info.version.patch}+build.${semver.info.count}.sha.${semver.info.shortCommit}"
                     }

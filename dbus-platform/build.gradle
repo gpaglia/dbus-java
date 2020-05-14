@@ -1,6 +1,11 @@
 plugins {
     id 'java-platform'
+    id 'io.wusa.semver-git-plugin'
+    id 'maven-publish'
 }
+
+// version from git
+version = semver.info
 
 apply from: './platform.gradle'
 
@@ -31,4 +36,13 @@ dependencies {
     // junit5 BOM
     api platform("org.junit:junit-bom:${dbus__junitVersion}")
 
+}
+
+publishing {
+    publications {
+        //noinspection GroovyAssignabilityCheck
+        dbusJavaPlatform(MavenPublication) {
+            from components.javaPlatform
+        }
+    }
 }

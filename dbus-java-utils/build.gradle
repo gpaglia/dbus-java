@@ -1,6 +1,6 @@
 plugins {
     id 'java-library'
-    id 'java-test-fixtures'
+    // id 'java-test-fixtures'
     id 'io.wusa.semver-git-plugin'
     id 'maven-publish'
     id 'io.freefair.lombok'
@@ -11,6 +11,9 @@ version = semver.info
 
 // configure sourcesets
 dependencies {
+    // depend on library project
+    implementation project(':dbus-java')
+
     // platform constraints
     api platform(project(':dbus-platform'))
 
@@ -22,10 +25,6 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.github.hypfvieh/java-utils
     implementation group: 'com.github.hypfvieh', name: 'java-utils'
-
-    // https://mvnrepository.com/artifact/com.github.jnr/jnr-unixsocket
-    implementation group: 'com.github.jnr', name: 'jnr-unixsocket'
-
 
     // junit
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter'
@@ -48,7 +47,7 @@ tasks.withType(Test) {
 publishing {
     publications {
         //noinspection GroovyAssignabilityCheck
-        dBusJavaLibrary(MavenPublication) {
+        dBusJavaUtils(MavenPublication) {
             from components.java
             // artifact ...
         }
