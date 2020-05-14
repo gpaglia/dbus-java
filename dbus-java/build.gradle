@@ -7,7 +7,7 @@ plugins {
 }
 
 // version from git
-version = '0.0.1' //semver.info
+version = semver.info
 
 // configure sourcesets
 dependencies {
@@ -47,7 +47,8 @@ tasks.withType(Test) {
 // publishing
 publishing {
     publications {
-        theFramework(MavenPublication) {
+        //noinspection GroovyAssignabilityCheck
+        theLibrary(MavenPublication) {
             from components.java
             // artifact ...
         }
