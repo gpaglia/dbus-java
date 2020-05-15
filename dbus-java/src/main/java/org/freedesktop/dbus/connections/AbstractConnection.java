@@ -534,7 +534,7 @@ public abstract class AbstractConnection implements Closeable {
    * Disconnect this session (for use in try-with-resources).
    */
   @Override
-  public void close() throws IOException {
+  public void close() {
     disconnect();
   }
 

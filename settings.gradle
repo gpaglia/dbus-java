@@ -22,7 +22,7 @@ pluginManagement {
 rootProject.name = 'dbus-java-parent'
 
 include 'dbus-platform',
-        'dbus-java' /*,
-        'dbus-java-utils',
+        'dbus-java',
+        'dbus-java-utils' /*,
         'dbus-java-osgi'
         */

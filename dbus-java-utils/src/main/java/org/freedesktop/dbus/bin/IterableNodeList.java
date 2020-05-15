@@ -18,7 +18,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 class IterableNodeList implements Iterable<Node> {
-    private NodeList nl;
+    private final NodeList nl;
 
     IterableNodeList(NodeList _nl) {
         this.nl = _nl;

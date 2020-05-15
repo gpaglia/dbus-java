@@ -2,11 +2,29 @@ plugins {
     id 'io.wusa.semver-git-plugin'
 }
 
-group = 'com.gpaglia.dbus'
+
 description = 'Evolution of github.com:hypfvieh/dbus-java.git [gradle, java 11, windows compat]'
 
 // version from git
-version = '0.1.0' // semver.info
+version = semver.info
+
+allprojects { Project prj ->
+    prj.group = 'com.gpaglia.dbus'
+    prj.version = semver.info
+    prj.getPlugins().withId('io.wusa.semver-git-plugin') {
+        prj.semver {
+            branches {
+                branch {
+                    regex = ".+"
+                    incrementer = "MINOR_INCREMENTER"
+                    formatter = {
+                        "${semver.info.version.major}.${semver.info.version.minor}.${semver.info.version.patch}+build.${semver.info.count}.sha.${semver.info.shortCommit}"
+                    }
+                }
+            }
+        }
+    }
+}
 
 subprojects { Project subp ->
     subp.getPlugins().withId('java') {
@@ -40,8 +58,6 @@ subprojects { Project subp ->
         }
 
     }
-
-
 
     // configure repositories
     repositories {

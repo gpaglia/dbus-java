@@ -1,6 +1,13 @@
 plugins {
     id 'java-platform'
+    id 'io.wusa.semver-git-plugin'
+    id 'maven-publish'
 }
+
+// version from git -- set in parent
+// version = semver.info
+
+description = 'Evolution of github.com:hypfvieh/dbus-java.git [gradle, java 11, windows compat] -- platform dependencies'
 
 apply from: './platform.gradle'
 
@@ -31,4 +38,16 @@ dependencies {
     // junit5 BOM
     api platform("org.junit:junit-bom:${dbus__junitVersion}")
 
+}
+
+publishing {
+    publications {
+        //noinspection GroovyAssignabilityCheck
+        dbusJavaPlatform(MavenPublication) {
+            from components.javaPlatform
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
 }
