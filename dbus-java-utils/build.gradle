@@ -6,8 +6,10 @@ plugins {
     id 'io.freefair.lombok'
 }
 
-// version from git
-version = semver.info
+// version from git -- set in parent
+// version = semver.info
+
+description = 'Evolution of github.com:hypfvieh/dbus-java.git [gradle, java 11, windows compat] -- tools & utilities'
 
 // configure sourcesets
 dependencies {

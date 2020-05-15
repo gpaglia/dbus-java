@@ -4,8 +4,10 @@ plugins {
     id 'maven-publish'
 }
 
-// version from git
-version = semver.info
+// version from git -- set in parent
+// version = semver.info
+
+description = 'Evolution of github.com:hypfvieh/dbus-java.git [gradle, java 11, windows compat] -- platform dependencies'
 
 apply from: './platform.gradle'
 
@@ -44,5 +46,8 @@ publishing {
         dbusJavaPlatform(MavenPublication) {
             from components.javaPlatform
         }
+    }
+    repositories {
+        mavenLocal()
     }
 }
