@@ -8,7 +8,15 @@ import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.messages.Message;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
 import java.security.MessageDigest;
@@ -426,9 +434,13 @@ public class SASL {
         case CLIENT:
           switch (state) {
             case INITIAL_STATE:
-              out.write(new byte[]{
-                  0
-              });
+              if (FreeBSDHelper.isFreeBSD()) {
+                FreeBSDHelper.send_cred(us);
+              } else {
+                out.write(new byte[]{
+                    0
+                });
+              }
               send(out, AUTH);
               state = SaslAuthState.WAIT_DATA;
               break;
@@ -550,23 +562,27 @@ public class SASL {
               break;
             case WAIT_REJECT:
               c = receive(in);
-              if (c.getCommand() == REJECTED) {
-                failed |= current;
-                int available = c.getMechs() & (~failed);
-                if (0 != (available & AUTH_EXTERNAL)) {
-                  send(out, AUTH, "EXTERNAL", luid);
-                  current = AUTH_EXTERNAL;
-                } else if (0 != (available & AUTH_SHA)) {
-                  send(out, AUTH, "DBUS_COOKIE_SHA1", luid);
-                  current = AUTH_SHA;
-                } else if (0 != (available & AUTH_ANON)) {
-                  send(out, AUTH, "ANONYMOUS");
-                  current = AUTH_ANON;
-                } else {
+              //noinspection SwitchStatementWithTooFewBranches
+              switch (c.getCommand()) {
+                case REJECTED:
+                  failed |= current;
+                  int available = c.getMechs() & (~failed);
+                  if (0 != (available & AUTH_EXTERNAL)) {
+                    send(out, AUTH, "EXTERNAL", luid);
+                    current = AUTH_EXTERNAL;
+                  } else if (0 != (available & AUTH_SHA)) {
+                    send(out, AUTH, "DBUS_COOKIE_SHA1", luid);
+                    current = AUTH_SHA;
+                  } else if (0 != (available & AUTH_ANON)) {
+                    send(out, AUTH, "ANONYMOUS");
+                    current = AUTH_ANON;
+                  } else {
+                    state = SaslAuthState.FAILED;
+                  }
+                  break;
+                default:
                   state = SaslAuthState.FAILED;
-                }
-              } else {
-                state = SaslAuthState.FAILED;
+                  break;
               }
               break;
             default:
