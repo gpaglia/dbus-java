@@ -24,6 +24,7 @@ public class StructHelper {
   /**
    * Creates a instance of the given {@link Struct} subclass if the given variant is some sort of Struct.
    *
+   * @param <T> the type of Struct
    * @param _variant     variant to convert
    * @param _structClass {@link Struct} subclass to create
    * @return instance of _structClass or null if _variant is not Struct compatible or any input parameter is null
@@ -56,6 +57,7 @@ public class StructHelper {
    * Will create a new {@link Struct} subclass instance if possible.
    * May replace Wrapper-classes with primitive classes in _constructorArgs if constructor does not match.
    *
+   * @param <T> the type of Struct
    * @param _constructorArgs  argument-classes expected by constructor
    * @param _values           values passed to the constructor
    * @param _classToConstruct {@link Struct} subclass to instantiate

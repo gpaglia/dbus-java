@@ -52,7 +52,7 @@ public class TestPeer2Peer {
       dc.disconnect();
       System.out.println("Client: Disconnected");
       finished = true;
-    } catch (IOException | DBusException _ex) {
+    } catch (DBusException _ex) {
       _ex.printStackTrace();
       fail("Exception in client");
     }
@@ -74,7 +74,7 @@ public class TestPeer2Peer {
         while (!finished) {
           Thread.sleep(500L);
         }
-      } catch (IOException | DBusException | InterruptedException _ex) {
+      } catch (DBusException | InterruptedException _ex) {
         _ex.printStackTrace();
         fail("Exception in server");
       }

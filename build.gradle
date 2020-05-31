@@ -10,8 +10,9 @@ version = semver.info
 
 allprojects { Project prj ->
     prj.group = 'com.gpaglia.dbus'
-    prj.version = semver.info
+    prj.version = '0.1.0-SNAPSHOT'  // default if no semver
     prj.getPlugins().withId('io.wusa.semver-git-plugin') {
+        prj.version = semver.info
         prj.semver {
             branches {
                 branch {
@@ -38,6 +39,12 @@ subprojects { Project subp ->
 
         subp.tasks.withType(JavaCompile) {
             options.encoding = 'UTF-8'
+            options.compilerArgs += [
+                    // jdk8 parameter names
+                    '-parameters',
+                    // '-proc:none',
+                    '-Xlint:deprecation'
+            ]
         }
 
         subp.tasks.withType(Test) {
@@ -60,7 +67,7 @@ subprojects { Project subp ->
     }
 
     // configure repositories
-    repositories {
+    subp.repositories {
         mavenLocal()
         jcenter()
     }
