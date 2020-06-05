@@ -1,4 +1,4 @@
-// settings file for micro-master project
+// settings file for dbus-java-parent project
 
 pluginManagement {
     this.apply from: './dbus-platform/platform.gradle'
