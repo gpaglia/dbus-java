@@ -305,7 +305,7 @@ public final class DBusConnection extends AbstractConnection {
         .orElseThrow(() -> new DBusException("Cannot Resolve Session Bus Address: MachineId file can not be found"));
   }
 
-  private static boolean isWindows() {
+  public static boolean isWindows() {
     String osName = System.getProperty("os.name");
     return osName != null && osName.toLowerCase().startsWith("windows");
   }

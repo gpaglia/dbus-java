@@ -1,4 +1,4 @@
-/target/
+target/
 .settings/
 .checkstyle
 
@@ -7,14 +7,12 @@
 *.iml
 
 .idea
-build
+build/
 
 dbus-java-osgi/META-INF
-dbus-java-osgi/target
 
 #gradle
 .gradle
-
 **/build/
 !src/**/build/
 
@@ -29,6 +27,6 @@ gradle-app.setting
 
 
 # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
-gradle/wrapper/gradle-wrapper.properties
+# gradle/wrapper/gradle-wrapper.properties
 /address
 

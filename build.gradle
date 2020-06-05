@@ -57,13 +57,20 @@ subprojects { Project subp ->
             options.encoding = 'UTF-8'
         }
 
+        subp.afterEvaluate {Project p ->
+            p.task(type: Jar, 'testJar') {
+                archiveClassifier = 'tests'
+                from p.sourceSets.test.output
+            }
+
+            p.jar.dependsOn testJar
+        }
     }
 
     subp.getPlugins().withId('io.freefair.lombok') {
         subp.lombok {
-            config['lombok.log.fieldName'] = 'LOGGER'
+            it.config['lombok.log.fieldName'] = 'LOGGER'
         }
-
     }
 
     // configure repositories
