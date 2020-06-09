@@ -16,7 +16,7 @@
     <logger name="org.freedesktop.dbus.messages" level="INFO" />
     <logger name="org.freedesktop.dbus.bin" level="INFO" />
 
-    <root level="debug">
+    <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
 
