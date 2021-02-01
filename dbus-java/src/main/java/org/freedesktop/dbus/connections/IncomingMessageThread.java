@@ -1,16 +1,17 @@
 package org.freedesktop.dbus.connections;
 
-import lombok.extern.slf4j.Slf4j;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.FatalException;
 import org.freedesktop.dbus.messages.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
-@Slf4j
 public class IncomingMessageThread extends Thread {
+  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
-  private boolean terminate;
+  private volatile boolean terminate;
   private final AbstractConnection connection;
 
   public IncomingMessageThread(AbstractConnection _connection) {
@@ -20,8 +21,8 @@ public class IncomingMessageThread extends Thread {
     setDaemon(true);
   }
 
-  public void setTerminate(boolean _terminate) {
-    terminate = _terminate;
+  public void terminate() {
+    terminate = true;
     interrupt();
   }
 
@@ -32,7 +33,7 @@ public class IncomingMessageThread extends Thread {
     LOGGER.trace("Reader thread loop starting...");
     while (!terminate) {
 
-        // read from the wire
+      // read from the wire
       try {
         // this blocks on outgoing being non-empty or a message being available.
         msg = connection.readIncoming();
@@ -40,15 +41,15 @@ public class IncomingMessageThread extends Thread {
           LOGGER.trace("Got Incoming Message: {}", msg);
 
           connection.handleMessage(msg);
-
         }
       } catch (DBusException _ex) {
         if (_ex instanceof FatalException) {
           LOGGER.error("FatalException in connection thread.", _ex);
           if (connection.isConnected()) {
+            terminate();
             connection.disconnect();
-            setTerminate(true);
           }
+          return;
         }
 
         if (!terminate) { // only log exceptions if the connection was not intended to be closed

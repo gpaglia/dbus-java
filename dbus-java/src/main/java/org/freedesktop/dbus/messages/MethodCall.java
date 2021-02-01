@@ -12,19 +12,20 @@
 
 package org.freedesktop.dbus.messages;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
-import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.utils.Hexdump;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
+import java.util.ArrayList;
+import java.util.List;
+
 public class MethodCall extends Message {
+  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
   MethodCall() {
   }
@@ -94,28 +95,28 @@ public class MethodCall extends Message {
       setArgs(args);
     }
 
-        int totalFileDes = 0;
-        if( args != null ){
-          for (Object arg : args) {
-            if (arg instanceof FileDescriptor) {
-              totalFileDes++;
-            }
-          }
+    int totalFileDes = 0;
+    if (args != null) {
+      for (Object arg : args) {
+        if (arg instanceof FileDescriptor) {
+          totalFileDes++;
         }
+      }
+    }
 
-        if( totalFileDes > 0 ){
-            getHeaders().put(Message.HeaderField.UNIX_FDS, totalFileDes);
-            hargs.add(new Object[]{
-                    Message.HeaderField.UNIX_FDS, new Object[]{
-                    ArgumentType.UINT32_STRING, new UInt32( totalFileDes )
-                }
-            });
-        }
+    if (totalFileDes > 0) {
+      getHeaders().put(Message.HeaderField.UNIX_FDS, totalFileDes);
+      hargs.add(new Object[]{
+          Message.HeaderField.UNIX_FDS, new Object[]{
+          ArgumentType.UINT32_STRING, new UInt32(totalFileDes)
+      }
+      });
+    }
 
-        byte[] blen = new byte[4];
-        appendBytes(blen);
-        append("ua(yv)", getSerial(), hargs.toArray());
-        pad((byte) 8);
+    byte[] blen = new byte[4];
+    appendBytes(blen);
+    append("ua(yv)", getSerial(), hargs.toArray());
+    pad((byte) 8);
 
     long c = getByteCounter();
     if (null != sig) {
@@ -126,7 +127,7 @@ public class MethodCall extends Message {
     LOGGER.debug("marshalled size ({}): {}", blen, Hexdump.format(blen));
   }
 
-    private static long REPLY_WAIT_TIMEOUT = 200000;
+  private static long REPLY_WAIT_TIMEOUT = 200000;
 
   /**
    * Set the default timeout for method calls.
@@ -174,7 +175,7 @@ public class MethodCall extends Message {
    * @return The reply to this MethodCall, or null if a timeout happens.
    */
   public synchronized Message getReply() {
-      LOGGER.trace("Blocking on {}", this);
+    LOGGER.trace("Blocking on {}", this);
 
     if (null != reply) {
       return reply;
@@ -188,7 +189,7 @@ public class MethodCall extends Message {
   }
 
   public synchronized void setReply(Message _reply) {
-      LOGGER.trace("Setting reply to {} to {}", this, _reply);
+    LOGGER.trace("Setting reply to {} to {}", this, _reply);
     this.reply = _reply;
     notifyAll();
   }

@@ -1,16 +1,17 @@
 package org.freedesktop.dbus.messages;
 
-import lombok.extern.slf4j.Slf4j;
-import org.freedesktop.Hexdump;
+import org.freedesktop.dbus.utils.Hexdump;
 import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageTypeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-@Slf4j
 public class MessageFactory {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MessageFactory.class);
 
   public static Message createMessage(
       byte _type,

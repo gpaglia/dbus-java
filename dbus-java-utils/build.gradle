@@ -3,7 +3,7 @@ plugins {
     // id 'java-test-fixtures'
     id 'io.wusa.semver-git-plugin'
     id 'maven-publish'
-    id 'io.freefair.lombok'
+    // id 'io.freefair.lombok'
 }
 
 // version from git -- set in parent
@@ -25,8 +25,11 @@ dependencies {
     // logback
     runtimeOnly group: 'ch.qos.logback', name: 'logback-classic'
 
+    /*
+    No longer needed with 3.3.0-SNAPSHOT
     // https://mvnrepository.com/artifact/com.github.hypfvieh/java-utils
     implementation group: 'com.github.hypfvieh', name: 'java-utils'
+     */
 
     // junit
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter'
@@ -45,6 +48,7 @@ tasks.withType(Test) {
     environment 'DBUS_SESSION_BUS_ADDRESS', 'tcp:host=localhost,port=54321,family=ipv4'
 }
 
+/*
 // publishing
 publishing {
     publications {
@@ -58,3 +62,4 @@ publishing {
         mavenLocal()
     }
 }
+ */

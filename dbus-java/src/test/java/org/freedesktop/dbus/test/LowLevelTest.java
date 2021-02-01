@@ -1,8 +1,9 @@
 package org.freedesktop.dbus.test;
 
-import com.github.hypfvieh.util.FileIoUtil;
-import com.github.hypfvieh.util.StringUtil;
-import lombok.extern.slf4j.Slf4j;
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
@@ -12,16 +13,16 @@ import org.freedesktop.dbus.fixtures.TestDaemonFixtures;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.utils.Util;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-@Slf4j
 public class LowLevelTest {
+  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+
   private static final TestDaemonFixtures fixt = new TestDaemonFixtures();
 
   @BeforeAll
@@ -91,9 +92,10 @@ public class LowLevelTest {
       if (!addressfile.exists()) {
         throw new RuntimeException("Cannot Resolve Session Bus Address");
       }
-      Properties readProperties = FileIoUtil.readProperties(addressfile);
+      Properties readProperties = Util.readProperties(addressfile);
+      assert readProperties != null;
       String sessionAddress = readProperties.getProperty("DBUS_SESSION_BUS_ADDRESS");
-      if (StringUtil.isEmpty(sessionAddress)) {
+      if (Util.isEmpty(sessionAddress)) {
         throw new RuntimeException("Cannot Resolve Session Bus Address");
       }
       return sessionAddress;

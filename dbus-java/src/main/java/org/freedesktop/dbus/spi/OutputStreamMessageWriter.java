@@ -15,18 +15,19 @@ package org.freedesktop.dbus.spi;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import lombok.extern.slf4j.Slf4j;
-import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.utils.Hexdump;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class OutputStreamMessageWriter implements IMessageWriter {
+  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
   private OutputStream outputStream;
 
-    public OutputStreamMessageWriter(OutputStream _out) {
-        this.outputStream = _out;
-    }
+  public OutputStreamMessageWriter(OutputStream _out) {
+    this.outputStream = _out;
+  }
 
   public void writeMessage(Message m) throws IOException {
     LOGGER.debug("<= {}", m);
@@ -34,13 +35,13 @@ public class OutputStreamMessageWriter implements IMessageWriter {
       return;
     }
     if (null == m.getWireData()) {
-        LOGGER.warn("Message {} wire-data was null!", m);
+      LOGGER.warn("Message {} wire-data was null!", m);
       return;
     }
 
     for (byte[] buf : m.getWireData()) {
       if (LOGGER.isTraceEnabled()) {
-          LOGGER.trace("{}", null == buf ? "" : Hexdump.format(buf));
+        LOGGER.trace("{}", null == buf ? "" : Hexdump.format(buf));
       }
       if (null == buf) {
         break;
@@ -52,7 +53,7 @@ public class OutputStreamMessageWriter implements IMessageWriter {
 
   @Override
   public void close() throws IOException {
-      LOGGER.debug("Closing Message Writer");
+    LOGGER.debug("Closing Message Writer");
     if (outputStream != null) {
       outputStream.close();
     }

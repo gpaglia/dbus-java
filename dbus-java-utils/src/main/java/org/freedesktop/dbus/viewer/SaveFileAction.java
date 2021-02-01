@@ -10,72 +10,80 @@
 */
 package org.freedesktop.dbus.viewer;
 
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import javax.swing.Action;
-import javax.swing.JTabbedPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 @SuppressWarnings("serial")
 class SaveFileAction extends TabbedSaveAction implements ChangeListener {
-    private class SelectedTabIterator implements Iterator<TextFile> {
-        // CHECKSTYLE:OFF
-        boolean iterated = false;
-        // CHECKSTYLE:ON
+  private class SelectedTabIterator implements Iterator<TextFile> {
+    // CHECKSTYLE:OFF
+    boolean iterated = false;
+    // CHECKSTYLE:ON
 
-        /** {@inheritDoc} */
-        @Override
-        public boolean hasNext() {
-            return !iterated;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public TextFile next() {
-            if (iterated) {
-                throw new NoSuchElementException("Already iterated");
-            }
-            iterated = true;
-            return getTextFile(tabbedPane.getSelectedIndex());
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-
-    }
-
-    SaveFileAction(JTabbedPane tabbedPane) {
-        super(tabbedPane);
-
-        enableAndSetName();
-
-        tabbedPane.addChangeListener(this);
-    }
-
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void stateChanged(ChangeEvent e) {
-        enableAndSetName();
+    public boolean hasNext() {
+      return !iterated;
     }
 
     /**
-     * Enable and set the name of the action based on the shown tab
+     * {@inheritDoc}
      */
-    void enableAndSetName() {
-        int selectedIndex = tabbedPane.getSelectedIndex();
-        boolean enabled = selectedIndex > -1;
-        putValue(Action.NAME, "Save " + getFileName(selectedIndex) + "...");
-        setEnabled(enabled);
+    @Override
+    public TextFile next() {
+      if (iterated) {
+        throw new NoSuchElementException("Already iterated");
+      }
+      iterated = true;
+      return getTextFile(tabbedPane.getSelectedIndex());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Iterator<TextFile> iterator() {
-        return new SelectedTabIterator();
+    public void remove() {
+      throw new UnsupportedOperationException();
     }
+
+  }
+
+  SaveFileAction(JTabbedPane tabbedPane) {
+    super(tabbedPane);
+
+    enableAndSetName();
+
+    tabbedPane.addChangeListener(this);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void stateChanged(ChangeEvent e) {
+    enableAndSetName();
+  }
+
+  /**
+   * Enable and set the name of the action based on the shown tab
+   */
+  void enableAndSetName() {
+    int selectedIndex = tabbedPane.getSelectedIndex();
+    boolean enabled = selectedIndex > -1;
+    putValue(Action.NAME, "Save " + getFileName(selectedIndex) + "...");
+    setEnabled(enabled);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Iterator<TextFile> iterator() {
+    return new SelectedTabIterator();
+  }
 }

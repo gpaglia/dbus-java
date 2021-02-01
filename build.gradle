@@ -1,3 +1,4 @@
+
 plugins {
     id 'io.wusa.semver-git-plugin'
 }
@@ -6,12 +7,14 @@ plugins {
 description = 'Evolution of github.com:hypfvieh/dbus-java.git [gradle, java 11, windows compat]'
 
 // version from git
+//noinspection GroovyAssignabilityCheck
 version = semver.info
 
 allprojects { Project prj ->
     prj.group = 'com.gpaglia.dbus'
     prj.version = '0.1.0-SNAPSHOT'  // default if no semver
     prj.getPlugins().withId('io.wusa.semver-git-plugin') {
+        //noinspection GroovyAssignabilityCheck
         prj.version = semver.info
         prj.semver {
             branches {
@@ -29,12 +32,24 @@ allprojects { Project prj ->
 
 subprojects { Project subp ->
     subp.getPlugins().withId('java') {
+
         // set java version and other standards for projects with java plugin installed
         subp.java {
             sourceCompatibility = JavaVersion.VERSION_11
             targetCompatibility = JavaVersion.VERSION_11
             withJavadocJar()
             withSourcesJar()
+            modularity.inferModulePath = true
+        }
+
+        // define a java9 sourceSet
+        subp.sourceSets {
+            //noinspection GroovyAssignabilityCheck
+            main {
+                java {
+                    srcDir 'src/main/java9'
+                }
+            }
         }
 
         subp.tasks.withType(JavaCompile) {
@@ -57,19 +72,33 @@ subprojects { Project subp ->
             options.encoding = 'UTF-8'
         }
 
-        subp.afterEvaluate {Project p ->
+        subp.afterEvaluate { Project p ->
             p.task(type: Jar, 'testJar') {
+                group = "build"
+                //noinspection GroovyAssignabilityCheck
                 archiveClassifier = 'tests'
                 from p.sourceSets.test.output
             }
 
             p.jar.dependsOn testJar
-        }
-    }
 
-    subp.getPlugins().withId('io.freefair.lombok') {
-        subp.lombok {
-            it.config['lombok.log.fieldName'] = 'LOGGER'
+            artifacts {
+                archives sourcesJar, javadocJar, testJar
+            }
+
+            // publishing
+            p.publishing {
+                publications.create("publish-${p.name}", MavenPublication) {
+                    artifact jar
+                    artifact sourcesJar
+                    artifact javadocJar
+                    artifact testJar
+                }
+
+                repositories {
+                    mavenLocal()
+                }
+            }
         }
     }
 
@@ -78,7 +107,6 @@ subprojects { Project subp ->
         mavenLocal()
         jcenter()
     }
-
 
 }
 

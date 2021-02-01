@@ -10,12 +10,12 @@
    Full licence texts are included in the LICENSE file with this program.
 */
 
-package org.freedesktop.dbus.bin;
-
-import java.util.Iterator;
+package org.freedesktop.dbus.utils.bin;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.Iterator;
 
 class NodeListIterator implements Iterator<Node> {
   // CHECKSTYLE:OFF

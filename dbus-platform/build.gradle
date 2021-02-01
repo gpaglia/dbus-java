@@ -27,12 +27,14 @@ dependencies {
         // hamcrest-optional
         api group: 'com.github.npathai', name: 'hamcrest-optional', version: "${dbus__hamcrestOptionalVersion}"
 
+        /*
+        No longer needed with 3.3.0-SNAPSHOT
         // https://mvnrepository.com/artifact/com.github.hypfvieh/java-utils
         api group: 'com.github.hypfvieh', name: 'java-utils', version: "${dbus__hypfviehUtilsVersion}"
+        */
 
         // https://mvnrepository.com/artifact/com.github.jnr/jnr-unixsocket
         api group: 'com.github.jnr', name: 'jnr-unixsocket', version: "${dbus__unixSocketVersion}"
-
 
     }
     // junit5 BOM

@@ -11,16 +11,17 @@
 */
 package org.freedesktop.dbus.connections;
 
-import com.github.hypfvieh.util.TypeUtil;
-import lombok.extern.slf4j.Slf4j;
-import org.freedesktop.dbus.exceptions.DBusException;
-
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-@Slf4j
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.utils.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class BusAddress {
+  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
   private final AddressBusTypes type;
   private final Map<String, String> parameters = new HashMap<>();
@@ -101,9 +102,9 @@ public class BusAddress {
   }
 
   public int getPort() {
-    return TypeUtil.isValidNetworkPort(parameters.get("port"), true)
+    return Util.isValidNetworkPort(parameters.get("port"), true)
         ? Integer.parseInt(parameters.get("port"))
-        : null;
+        : -1;
   }
 
   public String getHost() {

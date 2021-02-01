@@ -22,7 +22,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import lombok.extern.slf4j.Slf4j;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -46,6 +45,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -67,8 +67,8 @@ import org.slf4j.LoggerFactory;
  * This interface returns the {@link IEmptyCollectionStruct#getStringTestValue()} that value can be
  * used to determine whether (de)serialization of non empty collection is executed correctly.
  */
-@Slf4j
 class TestEmptyCollections {
+  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
   private DBusConnection serverconn;
   private DBusConnection clientconn;
@@ -133,7 +133,7 @@ class TestEmptyCollections {
     serverImpl = null;
 
     // give the dbus daemon some time to unregister our calls before restarting test
-    Utils.sleep(500L);
+    Utils.sleep(800L);
   }
 
   /**
@@ -184,20 +184,20 @@ class TestEmptyCollections {
     return Stream.of(
         Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testListPrimitive,
             s -> new ListStructPrimitive(Collections.emptyList(), s),
-            s -> new ListStructPrimitive(Arrays.asList(1, 2), s)), "ListPrimative", "1,2"),
+            s -> new ListStructPrimitive(Arrays.asList(1, 2), s)), "ListPrimitive", "1,2"),
         Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testListIntStruct,
             s -> new ListStructStruct(Collections.emptyList(), s),
             s -> new ListStructStruct(Collections.singletonList(new IntStruct(5, 6)), s)), "ListStruct", "(5,6)"),
         Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testArrayPrimitive,
             s -> new ArrayStructPrimitive(new int[0], s),
-            s -> new ArrayStructPrimitive(new int[]{4, 5}, s)), "ArrayPrimative", "4,5"),
+            s -> new ArrayStructPrimitive(new int[]{4, 5}, s)), "ArrayPrimitive", "4,5"),
         Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testArrayIntStruct,
                 s -> new ArrayStructIntStruct(new IntStruct[0], s),
                 s -> new ArrayStructIntStruct(new IntStruct[]{new IntStruct(9, 12)}, s)),
             "ArrayIntStruct", "(9,12)"),
         Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testMapPrimitive,
             s -> new MapStructPrimitive(Collections.emptyMap(), s),
-            s -> new MapStructPrimitive(getIntHashMap(), s)), "MapPrimative", "{test:8}"),
+            s -> new MapStructPrimitive(getIntHashMap(), s)), "MapPrimitive", "{test:8}"),
         Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testMapIntStruct,
             s -> new MapStructIntStruct(Collections.emptyMap(), s),
             s -> new MapStructIntStruct(getIntStructHashMap(), s)), "MapIntStruct", "{other:(12,17)}"),

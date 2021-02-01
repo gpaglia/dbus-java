@@ -1,25 +1,19 @@
 package org.freedesktop.dbus.utils.generator;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.DBusMapType;
 import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.utils.Util;
 
-import com.github.hypfvieh.util.StringUtil;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Helper to convert DBus types and java types.
@@ -46,7 +40,7 @@ public class TypeConverter {
    *
    * @param _argType  Argument to convert
    * @param _includes Set where additional includes will be added (should never be null!)
-   * @return String with proper type, if no converation could be done, original input is returned
+   * @return String with proper type, if no conversation could be done, original input is returned
    */
   public static String getProperJavaClass(String _argType, Set<String> _includes) {
     String clazzName;
@@ -108,6 +102,8 @@ public class TypeConverter {
 
     if (clazzName.equals("CharSequence")) {
       return "String";
+    } else if (clazzName.equals("Variant")) {
+      return "Variant<?>";
     }
 
     return _usePrimitives ? convertJavaBoxedTypeToPrimitive(clazzName) : clazzName;
@@ -152,7 +148,7 @@ public class TypeConverter {
     List<Type> dataType = new ArrayList<>();
     String type;
 
-    if (StringUtil.isBlank(_dbusType)) {
+    if (Util.isBlank(_dbusType)) {
       return null;
     }
 
@@ -182,6 +178,7 @@ public class TypeConverter {
       Type _type,
       @SuppressWarnings("unused") List<String> _innerGenerics
   ) {
+
     Map<String, List<String>> result = new LinkedHashMap<>();
     if (_type instanceof ParameterizedType) {
       ParameterizedType pType = (ParameterizedType) _type;
@@ -212,7 +209,7 @@ public class TypeConverter {
    */
   private static String getTypeAdv(String _dbusType, Set<String> _javaIncludes) throws DBusException {
 
-    if (StringUtil.isBlank(_dbusType)) {
+    if (Util.isBlank(_dbusType)) {
       return null;
     }
 

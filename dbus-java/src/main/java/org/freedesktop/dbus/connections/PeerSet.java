@@ -1,24 +1,28 @@
 package org.freedesktop.dbus.connections;
 
-import lombok.extern.slf4j.Slf4j;
-import org.freedesktop.DBus;
-import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.interfaces.DBusSigHandler;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.freedesktop.dbus.DBusMatchRule;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.DBus;
+import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 /**
  * Add addresses of peers to a set which will watch for them to
  * disappear and automatically remove them from the set.
  */
 @SuppressWarnings("unused")
-@Slf4j
 public class PeerSet implements Set<String>, DBusSigHandler<DBus.NameOwnerChanged> {
+  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+
   private final Set<String> addresses;
 
   public PeerSet(DBusConnection _connection) {

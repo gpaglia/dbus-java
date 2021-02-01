@@ -17,7 +17,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.Objects;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
@@ -33,6 +32,7 @@ import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,8 +48,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
       @SuppressWarnings("unused") String sig,
       Object[] rp,
       Method m,
-      AbstractConnection conn) throws DBusException
-  {
+      AbstractConnection conn) throws DBusException {
     Class<?> c = m.getReturnType();
 
     if (null == rp) {
@@ -60,7 +59,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
       }
     } else {
       try {
-        LOGGER.trace("Converting return parameters from {} to type {}", Arrays.deepToString(rp), m.getGenericReturnType());
+        LOGGER.trace("Converting return parameters from {} to type {}", LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), rp), m.getGenericReturnType());
         rp = Marshalling.deSerializeParameters(rp, new Type[]{
             m.getGenericReturnType()
         }, conn);
@@ -101,8 +100,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
       Method m,
       AbstractConnection conn,
       int syncmethod,
-      CallbackHandler<?> callback, Object... args) throws DBusExecutionException
-  {
+      CallbackHandler<?> callback, Object... args) throws DBusExecutionException {
     Type[] ts = m.getGenericParameterTypes();
     String sig = null;
     if (ts.length > 0) {
@@ -195,48 +193,48 @@ public class RemoteInvocationHandler implements InvocationHandler {
 
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-      switch (method.getName()) {
-          case "isRemote":
-              return true;
-          case "getObjectPath":
-              return remote.getObjectPath();
-          case "clone":
-          case "finalize":
-              return null;
-          case "equals":
-              try {
-                  if (1 == args.length) {
-                      return remote.equals(((RemoteInvocationHandler) Proxy.getInvocationHandler(args[0])).remote);
-                  }
-              } catch (IllegalArgumentException exIa) {
-                  return Boolean.FALSE;
-              }
-              break;
-          case "getClass":
-              return DBusInterface.class;
-          case "hashCode":
-              return remote.hashCode();
-          case "notify":
-              remote.notify();
-              return null;
-          case "notifyAll":
-              remote.notifyAll();
-              return null;
-          case "wait":
-              if (0 == args.length) {
-                  remote.wait();
-              } else if (1 == args.length && args[0] instanceof Long) {
-                  remote.wait((Long) args[0]);
-              } else if (2 == args.length && args[0] instanceof Long && args[1] instanceof Integer) {
-                  remote.wait((Long) args[0], (Integer) args[1]);
-              }
-              if (args.length <= 2) {
-                  return null;
-              }
-              break;
-          case "toString":
-              return remote.toString();
-      }
+    switch (method.getName()) {
+      case "isRemote":
+        return true;
+      case "getObjectPath":
+        return remote.getObjectPath();
+      case "clone":
+      case "finalize":
+        return null;
+      case "equals":
+        try {
+          if (1 == args.length) {
+            return remote.equals(((RemoteInvocationHandler) Proxy.getInvocationHandler(args[0])).remote);
+          }
+        } catch (IllegalArgumentException exIa) {
+          return Boolean.FALSE;
+        }
+        break;
+      case "getClass":
+        return DBusInterface.class;
+      case "hashCode":
+        return remote.hashCode();
+      case "notify":
+        remote.notify();
+        return null;
+      case "notifyAll":
+        remote.notifyAll();
+        return null;
+      case "wait":
+        if (0 == args.length) {
+          remote.wait();
+        } else if (1 == args.length && args[0] instanceof Long) {
+          remote.wait((Long) args[0]);
+        } else if (2 == args.length && args[0] instanceof Long && args[1] instanceof Integer) {
+          remote.wait((Long) args[0], (Integer) args[1]);
+        }
+        if (args.length <= 2) {
+          return null;
+        }
+        break;
+      case "toString":
+        return remote.toString();
+    }
 
     return executeRemoteMethod(remote, method, conn, CALL_TYPE_SYNC, null, args);
   }

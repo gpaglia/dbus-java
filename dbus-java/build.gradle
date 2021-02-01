@@ -3,7 +3,7 @@ plugins {
     id 'java-test-fixtures'
     id 'io.wusa.semver-git-plugin'
     id 'maven-publish'
-    id 'io.freefair.lombok'
+    // id 'io.freefair.lombok'
 }
 
 description = 'Evolution of github.com:hypfvieh/dbus-java.git [gradle, java 11, windows compat] -- library'
@@ -22,8 +22,11 @@ dependencies {
     // logback
     runtimeOnly group: 'ch.qos.logback', name: 'logback-classic'
 
+    /*
+    No longer needed with 3.3.0-SNAPSHOT
     // https://mvnrepository.com/artifact/com.github.hypfvieh/java-utils
     implementation group: 'com.github.hypfvieh', name: 'java-utils'
+    */
 
     // https://mvnrepository.com/artifact/com.github.jnr/jnr-unixsocket
     implementation group: 'com.github.jnr', name: 'jnr-unixsocket'
@@ -46,6 +49,7 @@ tasks.withType(Test) {
     environment 'DBUS_SESSION_BUS_ADDRESS', 'tcp:host=localhost,port=54321,family=ipv4'
 }
 
+/*
 // publishing
 publishing {
     publications {
@@ -59,3 +63,4 @@ publishing {
         mavenLocal()
     }
 }
+ */
