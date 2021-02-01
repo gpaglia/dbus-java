@@ -12,8 +12,6 @@
 
 package org.freedesktop.dbus.messages;
 
-import lombok.extern.slf4j.Slf4j;
-import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -23,6 +21,10 @@ import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
 import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.utils.Hexdump;
+import org.freedesktop.dbus.utils.LoggingHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
@@ -30,13 +32,12 @@ import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.*;
 
-
 /**
  * Superclass of all messages which are sent over the Bus. This class deals with all the marshalling to/from the wire
  * format.
  */
-@Slf4j
 public class Message {
+  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
   public static final int MAXIMUM_ARRAY_LENGTH = 67108864;
   public static final int MAXIMUM_MESSAGE_LENGTH = MAXIMUM_ARRAY_LENGTH * 2;
   @SuppressWarnings("unused")
@@ -185,9 +186,9 @@ public class Message {
 
     LOGGER.trace("Message header: {}", Hexdump.toAscii(_headers));
     Object[] hs = extract("a(yv)", _headers, 0);
-    if (LOGGER.isTraceEnabled()) {
-      LOGGER.trace(Arrays.deepToString(hs));
-    }
+
+    LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), hs);
+
     for (Object o : (List<Object>) hs[0]) {
       this.headers.put((Byte) ((Object[]) o)[0], ((Variant<Object>) ((Object[]) o)[1]).getValue());
     }
@@ -841,7 +842,7 @@ public class Message {
    * @throws DBusException on error
    */
   public void append(String sig, Object... data) throws DBusException {
-    LOGGER.debug("Appending sig: {} data: {}", sig, Arrays.deepToString(data));
+    LOGGER.debug("Appending sig: {} data: {}", sig, LoggingHelper.arraysDeepString(LOGGER.isDebugEnabled(), data));
     byte[] sigb = sig.getBytes();
     int j = 0;
     for (int i = 0; i < sigb.length; i++) {

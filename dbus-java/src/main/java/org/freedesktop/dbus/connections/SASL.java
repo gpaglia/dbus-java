@@ -1,12 +1,6 @@
 package org.freedesktop.dbus.connections;
 
-import jnr.posix.POSIXFactory;
-import jnr.unixsocket.Credentials;
-import jnr.unixsocket.UnixSocket;
-import lombok.extern.slf4j.Slf4j;
-import org.freedesktop.Hexdump;
-import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.messages.Message;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,10 +21,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import static org.freedesktop.dbus.connections.SASL.SaslCommand.*;
+import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.utils.Hexdump;
 
-@Slf4j
+import jnr.posix.POSIXFactory;
+import jnr.unixsocket.Credentials;
+import jnr.unixsocket.UnixSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class SASL {
+  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
   public static final int LOCK_TIMEOUT = 1000;
   public static final int NEW_KEY_TIMEOUT_SECONDS = 60 * 5;
@@ -259,7 +261,7 @@ public class SASL {
     out.write(sb.toString().getBytes());
   }
 
-  public SaslResult doChallenge(int _auth, SASL.Command c) throws IOException {
+  private SaslResult doChallenge(int _auth, SASL.Command c) throws IOException {
     if (_auth == AUTH_SHA) {
       String[] reply = stupidlyDecode(c.getData()).split(" ");
       LOGGER.trace(Arrays.toString(reply));
@@ -303,7 +305,7 @@ public class SASL {
     return SaslResult.ERROR;
   }
 
-  public SaslResult doResponse(int _auth, String _uid, String _kernelUid, SASL.Command _c) {
+  private SaslResult doResponse(int _auth, String _uid, String _kernelUid, SASL.Command _c) {
     MessageDigest md;
     try {
       md = MessageDigest.getInstance("SHA");
@@ -498,15 +500,28 @@ public class SASL {
                   }
                   break;
                 case ERROR:
-                  send(out, CANCEL);
-                  state = SaslAuthState.WAIT_REJECT;
+                  // when asking for file descriptor support, ERROR means FD support is not supported
+                  if (state == SaslAuthState.NEGOTIATE_UNIX_FD) {
+                    state = SaslAuthState.FINISHED;
+                    LOGGER.trace("File descriptors NOT supported by server");
+                    fileDescriptorSupported = false;
+                    send(out, BEGIN);
+                  } else {
+                    send(out, CANCEL);
+                    state = SaslAuthState.WAIT_REJECT;
+                  }
                   break;
                 case OK:
                   LOGGER.trace("Authenticated");
+                  // Check GP
+                  // state = SaslAuthState.AUTHENTICATED;
+
                   if (hasFileDescriptorSupport) {
+                    // Check GP
+                    // state = SaslAuthState.WAIT_DATA;
+                    state = SaslAuthState.NEGOTIATE_UNIX_FD;
                     LOGGER.trace("Asking for file descriptor support");
                     // if authentication was successful, ask remote end for file descriptor support
-                    state = SaslAuthState.NEGOTIATE_UNIX_FD;
                     send(out, SaslCommand.NEGOTIATE_UNIX_FD);
                   } else {
                     state = SaslAuthState.FINISHED;
@@ -562,7 +577,6 @@ public class SASL {
               break;
             case WAIT_REJECT:
               c = receive(in);
-              //noinspection SwitchStatementWithTooFewBranches
               switch (c.getCommand()) {
                 case REJECTED:
                   failed |= current;
@@ -601,13 +615,19 @@ public class SASL {
                   state = SaslAuthState.WAIT_AUTH;
                 }
               } else {
-
                 Credentials credentials;
                 try {
-                  credentials = ((UnixSocket) us).getCredentials();
-                  int kuid = credentials.getUid();
-                  if (kuid >= 0) {
-                    kernelUid = stupidlyEncode("" + kuid);
+                  if (FreeBSDHelper.isFreeBSD()) {
+                    long euid = FreeBSDHelper.recv_cred(us);
+                    if (euid >= 0) {
+                      kernelUid = stupidlyEncode("" + euid);
+                    }
+                  } else {
+                    credentials = ((UnixSocket) us).getCredentials();
+                    int kuid = credentials.getUid();
+                    if (kuid >= 0) {
+                      kernelUid = stupidlyEncode("" + kuid);
+                    }
                   }
                   state = SaslAuthState.WAIT_AUTH;
 
@@ -692,7 +712,6 @@ public class SASL {
                   state = SaslAuthState.WAIT_AUTH;
                   break;
                 case BEGIN:
-                  // state = SaslAuthState.AUTHENTICATED;
                   state = SaslAuthState.FINISHED;
                   break;
                 case NEGOTIATE_UNIX_FD:
@@ -702,11 +721,10 @@ public class SASL {
                   } else {
                     send(out, AGREE_UNIX_FD);
                   }
-                  state = SaslAuthState.FINISHED;
+
                   break;
                 default:
                   send(out, ERROR, "Got invalid command");
-                  state = SaslAuthState.FAILED;
                   break;
               }
               break;
@@ -726,7 +744,7 @@ public class SASL {
     SERVER, CLIENT
   }
 
-  enum SaslCommand {
+  public enum SaslCommand {
     AUTH,
     DATA,
     REJECTED,
@@ -758,8 +776,9 @@ public class SASL {
     REJECT
   }
 
-  @Slf4j
   public static class Command {
+    private final Logger C_LOGGER = LoggerFactory.getLogger(getClass());
+
     private SaslCommand command;
     private int mechs;
     private String data;
@@ -770,7 +789,7 @@ public class SASL {
 
     public Command(String s) throws IOException {
       String[] ss = s.split(" ");
-      LOGGER.trace("Creating command from: {}", Arrays.toString(ss));
+      C_LOGGER.trace("Creating command from: {}", Arrays.toString(ss));
       if (0 == col.compare(ss[0], "OK")) {
         command = SaslCommand.OK;
         data = ss[1];
@@ -816,7 +835,7 @@ public class SASL {
       } else {
         throw new IOException("Invalid Command " + ss[0]);
       }
-      LOGGER.trace("Created command: {}", this);
+      C_LOGGER.trace("Created command: {}", this);
     }
 
     public SaslCommand getCommand() {

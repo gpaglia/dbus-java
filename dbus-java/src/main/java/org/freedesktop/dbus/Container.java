@@ -18,15 +18,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.extern.slf4j.Slf4j;
 import org.freedesktop.dbus.annotations.Position;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is the super class of both Structs and Tuples
  * and holds common methods.
  */
-@Slf4j
 public abstract class Container {
+  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+
   private static final Map<Type, Type[]> typecache = new HashMap<>();
 
   static void putTypeCache(Type k, Type[] v) {

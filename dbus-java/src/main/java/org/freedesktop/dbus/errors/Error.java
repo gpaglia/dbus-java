@@ -16,7 +16,6 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.extern.slf4j.Slf4j;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -30,9 +29,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Error messages which can be sent over the bus.
  */
-@Slf4j
 public class Error extends Message {
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
   public Error() {
   }
@@ -161,7 +159,7 @@ public class Error extends Message {
       ex.setType(getName());
       return ex;
     } catch (Exception ex1) {
-      logger.debug("", ex1);
+      LOGGER.debug("", ex1);
       DBusExecutionException ex;
       Object[] args = null;
       try {

@@ -10,7 +10,7 @@
    Full licence texts are included in the LICENSE file with this program.
 */
 
-package org.freedesktop.dbus.bin;
+package org.freedesktop.dbus.utils.bin;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -54,7 +54,7 @@ class StructStruct {
     if (!(o instanceof StructStruct)) {
       return false;
     }
-      return name.equals(((StructStruct) o).name);
+    return name.equals(((StructStruct) o).name);
   }
 
   @Override

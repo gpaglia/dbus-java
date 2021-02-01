@@ -12,9 +12,34 @@
 
 package org.freedesktop.dbus.connections;
 
-import com.github.hypfvieh.threads.NameableThreadFactory;
-import lombok.extern.slf4j.Slf4j;
-import org.freedesktop.dbus.*;
+import java.io.Closeable;
+import java.io.EOFException;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.nio.ByteOrder;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.regex.Pattern;
+
+import org.freedesktop.dbus.DBusAsyncReply;
+import org.freedesktop.dbus.DBusCallInfo;
+import org.freedesktop.dbus.DBusMatchRule;
+import org.freedesktop.dbus.InternalSignal;
+import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.MethodTuple;
+import org.freedesktop.dbus.RemoteInvocationHandler;
+import org.freedesktop.dbus.RemoteObject;
+import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.errors.Error;
@@ -27,27 +52,22 @@ import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
-import org.freedesktop.dbus.messages.*;
-
-import java.io.Closeable;
-import java.io.EOFException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.nio.ByteOrder;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.*;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.regex.Pattern;
+import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.messages.ExportedObject;
+import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.messages.MethodReturn;
+import org.freedesktop.dbus.messages.ObjectTree;
+import org.freedesktop.dbus.utils.LoggingHelper;
+import org.freedesktop.dbus.utils.NameableThreadFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles a connection to DBus.
  */
-@Slf4j
 public abstract class AbstractConnection implements Closeable {
+  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
   private static final Map<Thread, DBusCallInfo> INFOMAP = new ConcurrentHashMap<>();
   /**
@@ -65,9 +85,9 @@ public abstract class AbstractConnection implements Closeable {
   private static byte endianness = getSystemEndianness();
 
   public static final boolean FLOAT_SUPPORT = (null != System.getenv("DBUS_JAVA_FLOATS"));
-  public static final String BUSNAME_REGEX = "^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$";
-  public static final String CONNID_REGEX = "^:[0-9]*\\.[0-9]*$";
-  public static final String OBJECT_REGEX = "^/([-_a-zA-Z0-9]+(/[-_a-zA-Z0-9]+)*)?$";
+  public static final Pattern BUSNAME_REGEX = Pattern.compile("^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$");
+  public static final Pattern CONNID_REGEX = Pattern.compile("^:[0-9]*\\.[0-9]*$");
+  public static final Pattern OBJECT_REGEX_PATTERN = Pattern.compile("^/([-_a-zA-Z0-9]+(/[-_a-zA-Z0-9]+)*)?$");
   public static final Pattern DOLLAR_PATTERN = Pattern.compile("[$]");
 
   public static final int MAX_ARRAY_LENGTH = 67108864;
@@ -95,10 +115,8 @@ public abstract class AbstractConnection implements Closeable {
 
   private final ExecutorService senderService;
 
-  private volatile boolean run;
-
   private boolean weakreferences = false;
-  private boolean connected;
+  private volatile boolean connected;
 
   private AbstractTransport transport;
   private volatile ThreadPoolExecutor workerThreadPool;
@@ -137,8 +155,6 @@ public abstract class AbstractConnection implements Closeable {
       disconnect();
       throw new DBusException("Failed to connect to bus: " + _ex.getMessage(), _ex);
     }
-    run = true;
-
   }
 
   public abstract DBusInterface getExportedObject(String source, String path) throws DBusException;
@@ -272,7 +288,7 @@ public abstract class AbstractConnection implements Closeable {
     if (null == objectpath || "".equals(objectpath)) {
       throw new DBusException("Must Specify an Object Path");
     }
-    if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
+    if (objectpath.length() > MAX_NAME_LENGTH || !(OBJECT_REGEX_PATTERN.matcher(objectpath).matches())) {
       throw new DBusException("Invalid object path: " + objectpath);
     }
     synchronized (getExportedObjects()) {
@@ -300,7 +316,7 @@ public abstract class AbstractConnection implements Closeable {
     if (null == _objectPrefix || "".equals(_objectPrefix)) {
       throw new DBusException("Must Specify an Object Path");
     }
-    if (!_objectPrefix.matches(OBJECT_REGEX) || _objectPrefix.length() > MAX_NAME_LENGTH) {
+    if (_objectPrefix.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(_objectPrefix).matches()) {
       throw new DBusException("Invalid object path: " + _objectPrefix);
     }
     ExportedObject eo = new ExportedObject(_object, weakreferences);
@@ -374,7 +390,7 @@ public abstract class AbstractConnection implements Closeable {
       throw new ClassCastException("Not A DBus Signal");
     }
     String objectpath = getImportedObjects().get(object).getObjectPath();
-    if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
+    if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
       throw new DBusException("Invalid object path: " + objectpath);
     }
     removeSigHandler(new DBusMatchRule(type, null, objectpath), handler);
@@ -418,7 +434,7 @@ public abstract class AbstractConnection implements Closeable {
       throw new DBusException("Not an object exported or imported by this connection");
     }
     String objectpath = rObj.getObjectPath();
-    if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
+    if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
       throw new DBusException("Invalid object path: " + objectpath);
     }
     addSigHandler(new DBusMatchRule(type, null, objectpath), handler);
@@ -466,8 +482,12 @@ public abstract class AbstractConnection implements Closeable {
   private synchronized void internalDisconnect() {
 
     if (!connected) { // already disconnected
+      LOGGER.debug("Ignoring disconnect, already disconnected");
       return;
     }
+
+    // stop the main thread
+    connected = false;
 
     LOGGER.debug("Sending disconnected signal");
     try {
@@ -479,10 +499,15 @@ public abstract class AbstractConnection implements Closeable {
 
     LOGGER.debug("Disconnecting Abstract Connection");
 
+    // stop reading new messages
+    readerThread.terminate();
+
+    // terminate the signal handling pool
     workerThreadPoolLock.writeLock().lock();
     try {
       // try to wait for all pending tasks.
       workerThreadPool.shutdown();
+      //noinspection ResultOfMethodCallIgnored
       workerThreadPool.awaitTermination(10, TimeUnit.SECONDS); // 10 seconds should be enough, otherwise fail
 
     } catch (InterruptedException _ex) {
@@ -495,12 +520,6 @@ public abstract class AbstractConnection implements Closeable {
     for (Runnable runnable : senderService.shutdownNow()) {
       runnable.run();
     }
-
-    // stop the main thread
-    run = false;
-    connected = false;
-
-    readerThread.setTerminate(true);
 
     // disconnect from the transport layer
     try {
@@ -723,7 +742,7 @@ public abstract class AbstractConnection implements Closeable {
       try {
         Type[] ts = me.getGenericParameterTypes();
         m.setArgs(Marshalling.deSerializeParameters(m.getParameters(), ts, conn));
-        LOGGER.trace("Deserialised {} to types {}", Arrays.deepToString(m.getParameters()), Arrays.deepToString(ts));
+        LOGGER.trace("Deserialised {} to types {}", LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), m.getParameters()), LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), ts));
       } catch (Exception e) {
         LOGGER.debug("", e);
         handleException(conn, m, new UnknownMethod("Failure in de-serializing message: " + e));
@@ -829,6 +848,9 @@ public abstract class AbstractConnection implements Closeable {
             rs = _signal.createReal(conn);
           } else {
             rs = _signal;
+          }
+          if (rs == null) {
+            return;
           }
           ((DBusSigHandler<DBusSignal>) h).handle(rs);
         } catch (DBusException _ex) {
@@ -1013,10 +1035,10 @@ public abstract class AbstractConnection implements Closeable {
           ((MethodCall) m).setReply(
               new Error(
                   "org.freedesktop.DBus.Local",
-              "org.freedesktop.DBus.Local.Disconnected",
-              0,
+                  "org.freedesktop.DBus.Local.Disconnected",
+                  0,
                   "s",
-                "Disconnected")
+                  "Disconnected")
           );
         } catch (DBusException exDe) {
           LOGGER.error("Error sending reply", exDe);
@@ -1058,10 +1080,10 @@ public abstract class AbstractConnection implements Closeable {
     try {
       m = transport.readMessage();
     } catch (IOException exIo) {
-      if (!run && (exIo instanceof EOFException)) { // EOF is expected when connection is shutdown
+      if (!connected && (exIo instanceof EOFException)) { // EOF is expected when connection is shutdown
         return null;
       }
-      if (run) {
+      if (connected) {
         LOGGER.error("Error reading incoming from connection", exIo);
         throw new FatalDBusException(exIo.getMessage());
       } // if run is false, suppress all exceptions - the connection either is already disconnected or should be disconnected right now

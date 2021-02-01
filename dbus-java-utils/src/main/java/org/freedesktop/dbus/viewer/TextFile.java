@@ -10,39 +10,42 @@
 */
 package org.freedesktop.dbus.viewer;
 
-/** A Text file abstraction
- *
+/**
+ * A Text file abstraction
  *
  * @author pete
  * @since 10/02/2006
  */
 class TextFile {
-    private final String fileName;
-    private final String contents;
+  private final String fileName;
+  private final String contents;
 
-    /** Create the TextFile
-     *
-     * @param _fileName The file name
-     * @param _contents The contents
-     */
-    TextFile(String _fileName, String _contents) {
-        this.fileName = _fileName;
-        this.contents = _contents;
-    }
+  /**
+   * Create the TextFile
+   *
+   * @param _fileName The file name
+   * @param _contents The contents
+   */
+  TextFile(String _fileName, String _contents) {
+    this.fileName = _fileName;
+    this.contents = _contents;
+  }
 
-    /** Retrieve the fileName
-     *
-     * @return The fileName.
-     */
-    String getFileName() {
-        return fileName;
-    }
+  /**
+   * Retrieve the fileName
+   *
+   * @return The fileName.
+   */
+  String getFileName() {
+    return fileName;
+  }
 
-    /** Retrieve the contents
-     *
-     * @return The contents.
-     */
-    String getContents() {
-        return contents;
-    }
+  /**
+   * Retrieve the contents
+   *
+   * @return The contents.
+   */
+  String getContents() {
+    return contents;
+  }
 }

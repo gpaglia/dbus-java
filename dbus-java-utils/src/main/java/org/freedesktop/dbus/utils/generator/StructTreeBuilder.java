@@ -1,19 +1,21 @@
 package org.freedesktop.dbus.utils.generator;
 
+import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.Struct;
+import org.freedesktop.dbus.annotations.Position;
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.Struct;
-import org.freedesktop.dbus.annotations.Position;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
-
-import com.github.hypfvieh.util.StringUtil;
 
 /**
  * Helper to create a DBus struct class.
@@ -44,7 +46,7 @@ public class StructTreeBuilder {
    */
   public String buildStructClasses(String _dbusSig, String _structName, ClassBuilderInfo _clzBldr, List<ClassBuilderInfo> _generatedClasses) throws DBusException {
 
-    if (StringUtil.isBlank(_dbusSig) || _generatedClasses == null) {
+    if (Util.isBlank(_dbusSig) || _generatedClasses == null) {
       return null;
     }
 
@@ -59,7 +61,7 @@ public class StructTreeBuilder {
     int cnt = 0;
     for (StructTree treeItem : structTree) {
       ClassBuilderInfo info = new ClassBuilderInfo();
-      info.setClassName(StringUtil.upperCaseFirstChar(_structName));
+      info.setClassName(Util.upperCaseFirstChar(_structName));
       info.setPackageName(_clzBldr.getPackageName());
       info.setExtendClass(Struct.class.getName());
       info.setClassType(ClassType.CLASS);
@@ -76,7 +78,7 @@ public class StructTreeBuilder {
       if (!treeItem.getSubType().isEmpty()) {
         createNested(treeItem.getSubType(), info, _generatedClasses);
       }
-      _clzBldr.getImports().addAll(info.getImports());
+      //_clzBldr.getImports().addAll(info.getImports());
     }
 
     return parentType == null ? _clzBldr.getPackageName() + "." + _structName : parentType.toString();
@@ -95,40 +97,45 @@ public class StructTreeBuilder {
 
     ClassBuilderInfo info = _info;
 
+    ClassConstructor classConstructor = new ClassConstructor();
     for (StructTree inTree : _list) {
-      ClassBuilderInfo.ClassMember member = new ClassBuilderInfo.ClassMember("member" + position, inTree.getDataType().getName(), true);
+      ClassBuilderInfo.MemberOrArgument member = new ClassBuilderInfo.MemberOrArgument("member" + position, inTree.getDataType().getName(), true);
       member.getAnnotations().add("@Position(" + position + ")");
+      String constructorArg = "member" + position;
       position++;
 
       if (Struct.class.isAssignableFrom(inTree.getDataType())) {
         info = new ClassBuilderInfo();
-        info.setClassName(StringUtil.upperCaseFirstChar(_info.getClassName()) + "Struct");
+        info.setClassName(Util.upperCaseFirstChar(_info.getClassName()) + "Struct");
         info.setPackageName(_info.getClassName());
         info.setExtendClass(Struct.class.getName());
         info.setClassType(ClassType.CLASS);
         _classes.add(info);
-      } else if (Collection.class.isAssignableFrom(inTree.getDataType())) {
+
+        classConstructor.getArguments().add(new MemberOrArgument(constructorArg, inTree.getDataType().getName()));
+
+      } else if (Collection.class.isAssignableFrom(inTree.getDataType()) || Map.class.isAssignableFrom(inTree.getDataType())) {
         ClassBuilderInfo temp = new ClassBuilderInfo();
+
         temp.setClassName(info.getClassName());
         temp.setPackageName(info.getPackageName());
         createNested(inTree.getSubType(), temp, _classes);
         info.getImports().addAll(temp.getImports());
-        member
-            .getGenerics()
-            .addAll(
-                temp
-                    .getMembers()
-                    .stream()
-                    .map(ClassBuilderInfo.ClassMember::getType)
-                    .collect(Collectors.toList())
-            );
+        member.getGenerics().addAll(temp.getMembers().stream().map(MemberOrArgument::getType).collect(Collectors.toList()));
+
+        MemberOrArgument argument = new MemberOrArgument(constructorArg, inTree.getDataType().getName());
+        argument.getGenerics().addAll(member.getGenerics());
+        classConstructor.getArguments().add(argument);
+      } else {
+        classConstructor.getArguments().add(new MemberOrArgument(constructorArg, inTree.getDataType().getName()));
       }
 
       info.getImports().add(Position.class.getName()); // add position annotation as include
       info.getImports().add(inTree.getDataType().getName());
       info.getMembers().add(member);
-
     }
+
+    info.getConstructors().add(classConstructor);
   }
 
 
@@ -167,7 +174,7 @@ public class StructTreeBuilder {
   private List<StructTree> buildTree(String _dbusTypeStr) throws DBusException {
     List<StructTree> root = new ArrayList<>();
 
-    if (StringUtil.isBlank(_dbusTypeStr)) {
+    if (Util.isBlank(_dbusTypeStr)) {
       return root;
     }
 
@@ -201,14 +208,14 @@ public class StructTreeBuilder {
     }
 
     for (Type type : _pType.getActualTypeArguments()) {
-        StructTree tree;
-        if (type instanceof ParameterizedType) {
-            tree = new StructTree(((ParameterizedType) type).getRawType().getTypeName());
+      StructTree tree;
+      if (type instanceof ParameterizedType) {
+        tree = new StructTree(((ParameterizedType) type).getRawType().getTypeName());
         tree.subType.addAll(buildTree((ParameterizedType) type));
-        } else {
-            tree = new StructTree(type.getTypeName());
-        }
-        trees.add(tree);
+      } else {
+        tree = new StructTree(type.getTypeName());
+      }
+      trees.add(tree);
     }
     return trees;
   }

@@ -1,4 +1,7 @@
-# dbus-java [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java)
+# dbus-java
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java)
+[![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java/javadoc.svg)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java)
+
 Improved version of [Java-DBus library provided by freedesktop.org](https://dbus.freedesktop.org/doc/dbus-java/) with compatibility to Java 8.
 
 Please note this version is not compatible with 2.7.x versions as classes have been moved in other packages or were completly removed.
@@ -7,10 +10,29 @@ Using this version as replacement for 2.7.x however, will not work without chang
 
 #### Changes
 
-##### Changes in 3.2.2 (not released yet):
+##### Changes in 3.3.0 (not released yet):
+  *CAUTION* - This version may contain breaking changes!!
+  - Removed usage of java-utils
+  - Moved Hexdump class from org.freedesktop to org.freedesktop.dbus.utils
+  - Moved DBus interface from org.freedesktop to org.freedesktop.dbus.interfaces
+  - Modulize dbus-java ([PR#125](https://github.com/hypfvieh/dbus-java/pull/125), thanks to [brett-smith](https://github.com/brett-smith))
+  - DBusConnection.getConnection(DBusBusType _bustype) will no longer throw RuntimeException but DBusConnectionException if something went wrong establishing DBus connection [#128](https://github.com/hypfvieh/dbus-java/issues/128)
+
+##### Changes in 3.2.4:
+  - Improved logging usage of Arrays.deepToString(Object[]), so this message will not be called in log statements if the loglevel is not enabled
+  - Improved usage of regex and length checks [#119](https://github.com/hypfvieh/dbus-java/issues/119) & [PR#120](https://github.com/hypfvieh/dbus-java/pull/120) (thanks to [OlegAndreych](https://github.com/OlegAndreych))
+  - Improvements in InterfaceCodeGenerator Util regarding creation of Struct classes ([#121](https://github.com/hypfvieh/dbus-java/issues/121))
+  - Fixed possible race-conditions/dead-locks when disconnecting from DBus ([#123](https://github.com/hypfvieh/dbus-java/pull/123))
+  
+##### Changes in 3.2.3:
+  - Fixed regression introduced with [#110](https://github.com/hypfvieh/dbus-java/pull/110) ([#114](https://github.com/hypfvieh/dbus-java/pull/114))
+
+##### Changes in 3.2.2:
   - Fixed issue with introspection caused by changes in [#80](https://github.com/hypfvieh/dbus-java/issues/80) ([#103](https://github.com/hypfvieh/dbus-java/issues/103)), thanks to [AsamK](https://github.com/AsamK)
   - Added support for FreeBSD, ([#105](https://github.com/hypfvieh/dbus-java/pull/105)) thanks to [grembo](https://github.com/grembo)
-
+  - Fixed SASL authentication may get stuck when using TCP ([#106](https://github.com/hypfvieh/dbus-java/pull/106)) thanks to [brett-smith](https://github.com/brett-smith)
+ - Fixed issues when dealing with multiple signals of the same name but different signatures ([#110](https://github.com/hypfvieh/dbus-java/pull/110))
+ - Dependency updates
 
 ##### Changes in 3.2.1
   - Fixed leaking signal handlers when using addSigHandler/removeSigHandler a lot ([#76](https://github.com/hypfvieh/dbus-java/issues/76))
@@ -40,7 +62,7 @@ Using this version as replacement for 2.7.x however, will not work without chang
   - Logback dependency for dbus-java is now test, so exclusions for logback are no longer required when using a different logger implementation
   - Logback dependency for dbus-java-utils is runtime, as most of the helper classes need logging to show progress or issues. 
     If you don't want to use logback when using dbus-java-utils, please specify an exclusion rule and add another slf4j logger in your pom 
-  - Added support sending/receiving FileDescriptor (UNIX_FD, DBus type 'h') (see [#42](https://github.com/hypfvieh/dbus-java/issues/42))
+  - Added support sending/receiving FileDescriptor (UNIX_FD, DBus type 'h') (see [#42](https://githincludeub.com/hypfvieh/dbus-java/issues/42))
 
 ##### Changes in 3.0.1
   - New tool (org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator) to create apropriate java classes/interfaces from introspection XML (beta, will replace org.freedesktop.dbus.bin.CreateInterface)

@@ -12,15 +12,16 @@
 
 package org.freedesktop.dbus.messages;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.regex.Pattern;
 
 /**
  * Keeps track of the exported objects for introspection data
  */
-@Slf4j
 public class ObjectTree {
+  private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
   static class TreeNode {
     // CHECKSTYLE:OFF

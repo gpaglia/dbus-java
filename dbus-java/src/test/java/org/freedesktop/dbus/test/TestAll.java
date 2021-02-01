@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.freedesktop.DBus;
 import org.freedesktop.dbus.DBusAsyncReply;
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.DBusPath;
@@ -41,6 +40,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.fixtures.TestDaemonFixtures;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
+import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Local;
 import org.freedesktop.dbus.interfaces.Peer;
@@ -80,9 +80,8 @@ import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
 import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.utils.TimeMeasure;
 import org.junit.jupiter.api.*;
-
-import com.github.hypfvieh.util.TimeMeasure;
 
 /**
  * This is a test program which sends and recieves a signal, implements, exports and calls a remote method.
@@ -651,7 +650,7 @@ public class TestAll {
 
   }
 
-  @SuppressWarnings("unused")
+  @Test
   public void testSerialization() throws DBusException {
     SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
     List<Integer> v = new ArrayList<>();

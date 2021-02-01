@@ -10,32 +10,7 @@
    Full licence texts are included in the LICENSE file with this program.
 */
 
-package org.freedesktop.dbus.bin;
-
-import static org.freedesktop.dbus.bin.IdentifierMangler.mangle;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+package org.freedesktop.dbus.utils.bin;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
@@ -51,6 +26,17 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
+
+import static org.freedesktop.dbus.utils.bin.IdentifierMangler.mangle;
 
 /**
  * Converts a DBus XML file into Java interface definitions.
@@ -89,14 +75,14 @@ public class CreateInterface {
         return c.getName();
       } else {
         s = new StringBuilder(c.getSimpleName());
+        s.append('<');
+        Type[] ts = ((ParameterizedType) t).getActualTypeArguments();
+        for (Type st : ts) {
+          s.append(collapseType(st, imports, structs, true, false)).append(',');
+        }
+        s = new StringBuilder(s.toString().replaceAll(",$", ">"));
+        return s.toString();
       }
-      s.append('<');
-      Type[] ts = ((ParameterizedType) t).getActualTypeArguments();
-      for (Type st : ts) {
-        s.append(collapseType(st, imports, structs, true, fullnames)).append(',');
-      }
-      s = new StringBuilder(s.toString().replaceAll(",$", ">"));
-      return s.toString();
     } else if (t instanceof Class) {
       Class<?> c = (Class<?>) t;
       if (c.isArray()) {
@@ -131,7 +117,7 @@ public class CreateInterface {
       String dbus,
       Set<String> imports,
       Map<StructStruct,
-      Type[]> structs,
+          Type[]> structs,
       boolean container,
       @SuppressWarnings("SameParameterValue") boolean fullnames
   ) throws DBusException {
@@ -725,13 +711,17 @@ public class CreateInterface {
       }
       expected.append(name).append(" or ");
     }
-    System.err.println(String.format("ERROR: Expected %s, got %s, failed.", expected.toString().replaceAll("....$", ""), n.getNodeName()));
+    System.err.printf(
+        "ERROR: Expected %s, got %s, failed.%n",
+        expected.toString().replaceAll("....$", ""),
+        n.getNodeName()
+    );
     System.exit(1);
   }
 
   private final PrintStreamFactory factory;
 
-  static class Config {
+  public static class Config {
     // CHECKSTYLE:OFF
     DBusBusType bus = DBusBusType.SESSION;
     String busname = null;

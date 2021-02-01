@@ -14,7 +14,11 @@ pluginManagement {
     //noinspection GroovyAssignabilityCheck
     plugins {
         id 'io.wusa.semver-git-plugin' version "${dbus__wusaSemverPluginVersion}"
-        id 'io.freefair.lombok' version "${dbus__lombokPluginVersion}"
+        // disable for now
+        // id 'org.javamodularity.moduleplugin' version "${dbus__modularityPluginVersion}"
+
+        // disable lombok
+        // id 'io.freefair.lombok' version "${dbus__lombokPluginVersion}"
     }
 
 }

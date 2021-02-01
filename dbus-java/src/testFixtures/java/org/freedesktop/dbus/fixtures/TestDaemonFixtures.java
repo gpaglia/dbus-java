@@ -1,8 +1,8 @@
 package org.freedesktop.dbus.fixtures;
 
 import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
-import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.utils.Util;
 
 import java.io.IOException;
 
@@ -22,7 +22,7 @@ public class TestDaemonFixtures {
     }
 
  */
-    if (DBusConnection.isWindows()) {
+    if (Util.isWindows()) {
       daemon = new EmbeddedDBusDaemon();
       daemon.setAddress(address);
       daemon.startInBackground();
@@ -35,8 +35,9 @@ public class TestDaemonFixtures {
     }
   }
 
+  @SuppressWarnings("unused")
   public EmbeddedDBusDaemon getDaemon() {
-    if (! DBusConnection.isWindows()) {
+    if (! Util.isWindows()) {
       throw new IllegalStateException("No daemon support when not running on Window - use std bluetooth infrastructure on linux/mac");
     }
     return daemon;
