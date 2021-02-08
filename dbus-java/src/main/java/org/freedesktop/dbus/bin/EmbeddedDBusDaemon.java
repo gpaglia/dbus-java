@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.sasl.AuthScheme;
-import org.freedesktop.dbus.connections.sasl.SASLStateMachine;
 import org.freedesktop.dbus.connections.sasl.SaslMode;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.slf4j.Logger;
@@ -20,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import jnr.unixsocket.UnixServerSocketChannel;
 import jnr.unixsocket.UnixSocketAddress;
 import jnr.unixsocket.UnixSocketChannel;
+
+import static org.freedesktop.dbus.connections.sasl.SaslStateMachine.createSaslStateMachine;
 
 /**
  *
@@ -110,7 +111,7 @@ public class EmbeddedDBusDaemon implements Closeable {
     // accept new connections
     while (daemonThread.isRunning()) {
       UnixSocketChannel s = uss.accept();
-      if ((new SASLStateMachine(true)).auth(SaslMode.SERVER, authTypes, address.getGuid(), s.socket().getOutputStream(), s.socket().getInputStream(), s.socket())) {
+      if ((createSaslStateMachine(SaslMode.SERVER, true)).auth(authTypes, address.getGuid(), s.socket().getOutputStream(), s.socket().getInputStream(), s.socket())) {
         // s.setBlocking(false);
         daemonThread.addSock(s.socket());
       } else {
@@ -134,7 +135,7 @@ public class EmbeddedDBusDaemon implements Closeable {
         Socket s = ss.accept();
         boolean authOK = false;
         try {
-          authOK = (new SASLStateMachine(false)).auth(SaslMode.SERVER, authTypes, address.getGuid(), s.getOutputStream(), s.getInputStream(), null);
+          authOK = (createSaslStateMachine(SaslMode.SERVER, false)).auth(authTypes, address.getGuid(), s.getOutputStream(), s.getInputStream(), null);
         } catch (Exception e) {
           LOGGER.debug("", e);
         }

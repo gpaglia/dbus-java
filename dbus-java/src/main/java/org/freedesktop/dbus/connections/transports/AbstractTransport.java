@@ -11,7 +11,7 @@ import java.util.ServiceLoader;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.sasl.AuthScheme;
-import org.freedesktop.dbus.connections.sasl.SASLStateMachine;
+import org.freedesktop.dbus.connections.sasl.SaslStateMachine;
 import org.freedesktop.dbus.connections.sasl.SaslMode;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.freedesktop.dbus.connections.sasl.AuthScheme.*;
+import static org.freedesktop.dbus.connections.sasl.SaslStateMachine.createSaslStateMachine;
 
 /**
  * Base class for all transport types.
@@ -110,8 +111,8 @@ public abstract class AbstractTransport implements Closeable {
    * @throws IOException on any error
    */
   protected void authenticate(OutputStream _out, InputStream _in, Socket _sock) throws IOException {
-    SASLStateMachine sasl = new SASLStateMachine(hasFileDescriptorSupport());
-    if (!sasl.auth(saslMode, saslAuthModes, address.getGuid(), _out, _in, _sock)) {
+    SaslStateMachine sasl = createSaslStateMachine(saslMode, hasFileDescriptorSupport());
+    if (!sasl.auth(saslAuthModes, address.getGuid(), _out, _in, _sock)) {
       _out.close();
       throw new IOException("Failed to auth");
     }
