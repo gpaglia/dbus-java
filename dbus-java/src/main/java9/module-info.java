@@ -3,6 +3,7 @@ module org.freedesktop.dbus {
     exports org.freedesktop.dbus.bin;
     exports org.freedesktop.dbus.annotations;
     exports org.freedesktop.dbus.connections;
+    exports org.freedesktop.dbus.connections.sasl;
     exports org.freedesktop.dbus.connections.impl;
     exports org.freedesktop.dbus.connections.transports;
     exports org.freedesktop.dbus.errors;
@@ -17,8 +18,6 @@ module org.freedesktop.dbus {
     requires java.datatransfer;
     requires java.desktop;
     requires transitive java.xml;
-    // GP edit -- remove lombok
-    // requires static lombok;
 
     // GP Edit
     requires /* transitive */ org.slf4j;

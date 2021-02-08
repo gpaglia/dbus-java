@@ -6,16 +6,15 @@ plugins {
 
 description = 'Evolution of github.com:hypfvieh/dbus-java.git [gradle, java 11, windows compat]'
 
-// version from git
-//noinspection GroovyAssignabilityCheck
-version = semver.info
+// version = semver.info
 
 allprojects { Project prj ->
     prj.group = 'com.gpaglia.dbus'
     prj.version = '0.1.0-SNAPSHOT'  // default if no semver
     prj.getPlugins().withId('io.wusa.semver-git-plugin') {
         //noinspection GroovyAssignabilityCheck
-        prj.version = semver.info
+        // version from git
+        prj.version = semver.info.toString()
         prj.semver {
             branches {
                 branch {
@@ -39,9 +38,11 @@ subprojects { Project subp ->
             targetCompatibility = JavaVersion.VERSION_11
             withJavadocJar()
             withSourcesJar()
+            // modularity enabled
             modularity.inferModulePath = true
         }
 
+        // modularity enabled
         // define a java9 sourceSet
         subp.sourceSets {
             //noinspection GroovyAssignabilityCheck
@@ -60,6 +61,10 @@ subprojects { Project subp ->
                     // '-proc:none',
                     '-Xlint:deprecation'
             ]
+
+            // modularity disabled, not working
+            // use the project's version or define one directly
+            // options.javaModuleVersion = provider { project.version }
         }
 
         subp.tasks.withType(Test) {
@@ -80,7 +85,7 @@ subprojects { Project subp ->
                 from p.sourceSets.test.output
             }
 
-            p.jar.dependsOn testJar
+            // p.jar.dependsOn testJar
 
             artifacts {
                 archives sourcesJar, javadocJar, testJar
@@ -101,6 +106,19 @@ subprojects { Project subp ->
             }
         }
     }
+
+    /* modularity disabled, not working
+    subp.getPlugins().withId('java-test-fixtures') { it ->
+        subp.sourceSets {
+            //noinspection GroovyAssignabilityCheck
+            testFixtures {
+                java {
+                    srcDir 'src/main/java9'
+                }
+            }
+        }
+    }
+     */
 
     // configure repositories
     subp.repositories {

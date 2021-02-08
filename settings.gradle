@@ -19,6 +19,10 @@ pluginManagement {
 
         // disable lombok
         // id 'io.freefair.lombok' version "${dbus__lombokPluginVersion}"
+
+        // disable modularity
+        // https://github.com/jjohannes/extra-java-module-info
+        // id "de.jjohannes.extra-java-module-info" version "${dbus__extraModuleInfoPluginVersion}"
     }
 
 }

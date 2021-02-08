@@ -5,7 +5,8 @@ ext {
     dbus__wusaSemverPluginVersion = '2.3.7'
     // disable for now
     // dbus__modularityPluginVersion = '1.7.0'
-    dbus__lombokPluginVersion = '5.3.0'
+    // dbus__lombokPluginVersion = '5.3.0'
+    // dbus__extraModuleInfoPluginVersion = '0.5'
 
     // slf4j
     dbus__slf4jVersion = '1.7.30'
@@ -30,5 +31,6 @@ ext {
 
     // https://mvnrepository.com/artifact/com.github.jnr/jnr-unixsocket
     dbus__unixSocketVersion = '0.38.5'
+
 
 }

@@ -8,4 +8,5 @@ module org.freedesktop.dbus.utils {
     requires org.slf4j;
     requires java.xml;
     requires java.desktop;
+
 }

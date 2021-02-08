@@ -1,45 +1,38 @@
-package org.freedesktop.dbus.connections;
+package org.freedesktop.dbus.connections.sasl;
 
-import static org.freedesktop.dbus.connections.SASL.SaslCommand.*;
+import jnr.posix.POSIXFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import jnr.unixsocket.Credentials;
+import jnr.unixsocket.UnixSocket;
+import org.freedesktop.dbus.connections.FreeBSDHelper;
+import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.utils.Hexdump;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Collator;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.EnumSet;
 import java.util.Random;
 
-import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.utils.Hexdump;
+import static org.freedesktop.dbus.connections.sasl.AuthScheme.*;
+import static org.freedesktop.dbus.connections.sasl.SaslUtils.*;
+import static org.freedesktop.dbus.connections.sasl.SaslCommand.*;
 
-import jnr.posix.POSIXFactory;
-import jnr.unixsocket.Credentials;
-import jnr.unixsocket.UnixSocket;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class SASL {
+@SuppressWarnings("unused")
+public class SASLStateMachine {
   private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
-  public static final int LOCK_TIMEOUT = 1000;
-  public static final int NEW_KEY_TIMEOUT_SECONDS = 60 * 5;
-  public static final int EXPIRE_KEYS_TIMEOUT_SECONDS = NEW_KEY_TIMEOUT_SECONDS + (60 * 2);
-  public static final int MAX_TIME_TRAVEL_SECONDS = 60 * 5;
-  public static final int COOKIE_TIMEOUT = 240;
-  public static final String COOKIE_CONTEXT = "org_freedesktop_java";
+  // Message headers for state machine messages (org.springframework.messaging)
+  private static final String MECHS_MSG_HDR = "mechs";
+  private static final String DATA_MSG_HDR = "data";
+  private static final String RESPONSE_MSG_HDR = "response";
 
   private static final Collator col = Collator.getInstance();
 
@@ -62,7 +55,7 @@ public class SASL {
    * Create a new SASL auth handler.
    * Defaults to disable file descriptor passing.
    */
-  public SASL() {
+  public SASLStateMachine() {
     this(false);
   }
 
@@ -71,157 +64,40 @@ public class SASL {
    *
    * @param _hasFileDescriptorSupport true to support file descriptor passing (usually only works with UNIX_SOCKET).
    */
-  public SASL(boolean _hasFileDescriptorSupport) {
+  public SASLStateMachine(boolean _hasFileDescriptorSupport) {
     hasFileDescriptorSupport = _hasFileDescriptorSupport;
 
   }
 
-  private String findCookie(String context, String ID) throws IOException {
-    String homedir = System.getProperty("user.home");
-    File f = new File(homedir + "/.dbus-keyrings/" + context);
-    BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
-    String s;
-    String lCookie = null;
-    long now = System.currentTimeMillis() / 1000;
-    while (null != (s = r.readLine())) {
-      String[] line = s.split(" ");
-      long timestamp = Long.parseLong(line[1]);
-      if (line[0].equals(ID) && (!(timestamp < 0 || (now + MAX_TIME_TRAVEL_SECONDS) < timestamp || (now - EXPIRE_KEYS_TIMEOUT_SECONDS) > timestamp))) {
-        lCookie = line[2];
-        break;
+  /*
+  public SASLStateMachine.Command receive(InputStream s) throws IOException {
+    StringBuffer sb = new StringBuffer();
+    top:
+    while (true) {
+      int c = s.read();
+      switch (c) {
+        case -1:
+          throw new IOException("Stream unexpectedly short (broken pipe)");
+        case 0:
+        case '\r':
+          continue;
+        case '\n':
+          break top;
+        default:
+          sb.append((char) c);
       }
     }
-    r.close();
-    return lCookie;
-  }
-
-  private void addCookie(String _context, String _id, long _timestamp, String _cookie) throws IOException {
-    String homedir = System.getProperty("user.home");
-    File keydir = new File(homedir + "/.dbus-keyrings/");
-    File cookiefile = new File(homedir + "/.dbus-keyrings/" + _context);
-    File lock = new File(homedir + "/.dbus-keyrings/" + _context + ".lock");
-    File temp = new File(homedir + "/.dbus-keyrings/" + _context + ".temp");
-
-    // ensure directory exists
-    if (!keydir.exists()) {
-      //noinspection ResultOfMethodCallIgnored
-      keydir.mkdirs();
-    }
-
-    // acquire lock
-    long start = System.currentTimeMillis();
-    //noinspection StatementWithEmptyBody
-    while (!lock.createNewFile() && LOCK_TIMEOUT > (System.currentTimeMillis() - start)) {
-    }
-
-    // read old file
-    List<String> lines = new ArrayList<>();
-    if (cookiefile.exists()) {
-      BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(cookiefile)));
-      String s;
-      while (null != (s = r.readLine())) {
-        String[] line = s.split(" ");
-        long time = Long.parseLong(line[1]);
-        // expire stale cookies
-        if ((_timestamp - time) < COOKIE_TIMEOUT) {
-          lines.add(s);
-        }
-      }
-      r.close();
-    }
-
-    // add cookie
-    lines.add(_id + " " + _timestamp + " " + _cookie);
-
-    // write temp file
-    PrintWriter w = new PrintWriter(new FileOutputStream(temp));
-    for (String l : lines) {
-      w.println(l);
-    }
-    w.close();
-
-    // atomically move to old file
-    if (!temp.renameTo(cookiefile)) {
-      if (!cookiefile.delete()) {
-        LOGGER.error("Error deleting cookiefile {}", cookiefile.toString());
-        throw new DBusExecutionException("Failed delete of cookiefile");
-      }
-      if (!temp.renameTo(cookiefile)) {
-        LOGGER.error("Failed rename of cookiefile {} to {}", temp, cookiefile);
-        throw new DBusExecutionException("Failed rename of cookiefile");
-      }
-    }
-
-    // remove lock
-    if (!lock.delete()) {
-      LOGGER.error("Failed delete of file {}", lock);
-      throw new DBusExecutionException("Failed delete of lock file");
+    LOGGER.trace("received: {}", sb);
+    try {
+      return new Command(sb.toString());
+    } catch (Exception e) {
+      LOGGER.error("Cannot create command.", e);
+      return new Command();
     }
   }
+  */
 
-  /**
-   * Takes the string, encodes it as hex and then turns it into a string again.
-   * No, I don't know why either.
-   */
-  private String stupidlyEncode(String data) {
-    return Hexdump.toHex(data.getBytes()).replaceAll(" ", "");
-  }
-
-  private String stupidlyEncode(byte[] data) {
-    return Hexdump.toHex(data).replaceAll(" ", "");
-  }
-
-  private byte getNibble(char c) {
-    switch (c) {
-      case '0':
-      case '1':
-      case '2':
-      case '3':
-      case '4':
-      case '5':
-      case '6':
-      case '7':
-      case '8':
-      case '9':
-        return (byte) (c - '0');
-      case 'A':
-      case 'B':
-      case 'C':
-      case 'D':
-      case 'E':
-      case 'F':
-        return (byte) (c - 'A' + 10);
-      case 'a':
-      case 'b':
-      case 'c':
-      case 'd':
-      case 'e':
-      case 'f':
-        return (byte) (c - 'a' + 10);
-      default:
-        return 0;
-    }
-  }
-
-  private String stupidlyDecode(String data) {
-    char[] cs = new char[data.length()];
-    char[] res = new char[cs.length / 2];
-    data.getChars(0, data.length(), cs, 0);
-    for (int i = 0, j = 0; j < res.length; i += 2, j++) {
-      int b = 0;
-      b |= getNibble(cs[i]) << 4;
-      b |= getNibble(cs[i + 1]);
-      res[j] = (char) b;
-    }
-    return new String(res);
-  }
-
-  public static final int AUTH_NONE = 0;
-  public static final int AUTH_EXTERNAL = 1;
-  public static final int AUTH_SHA = 2;
-  public static final int AUTH_ANON = 4;
-
-  public SASL.Command receive(InputStream s) throws IOException {
+  public Command receive(InputStream s) throws IOException {
     StringBuffer sb = new StringBuffer();
     top:
     while (true) {
@@ -261,7 +137,7 @@ public class SASL {
     out.write(sb.toString().getBytes());
   }
 
-  private SaslResult doChallenge(int _auth, SASL.Command c) throws IOException {
+  private SaslResult doChallenge(AuthScheme _auth, Command c) throws IOException {
     if (_auth == AUTH_SHA) {
       String[] reply = stupidlyDecode(c.getData()).split(" ");
       LOGGER.trace(Arrays.toString(reply));
@@ -305,7 +181,7 @@ public class SASL {
     return SaslResult.ERROR;
   }
 
-  private SaslResult doResponse(int _auth, String _uid, String _kernelUid, SASL.Command _c) {
+  private SaslResult doResponse(AuthScheme _auth, String _uid, String _kernelUid, Command _c) {
     MessageDigest md;
     try {
       md = MessageDigest.getInstance("SHA");
@@ -313,15 +189,21 @@ public class SASL {
       LOGGER.error("", nsae);
       return SaslResult.ERROR;
     }
+
+    LOGGER.trace("scheme: {}, uid: {}, kuid: {}, cmd: {}", _auth, _uid, _kernelUid, _c);
+
     switch (_auth) {
       case AUTH_NONE:
         switch (_c.getMechs()) {
           case AUTH_ANON:
+            LOGGER.trace("result AUTH_NONE(AUTH_ANON): OK");
             return SaslResult.OK;
           case AUTH_EXTERNAL:
             if (0 == col.compare(_uid, _c.getData()) && (null == _kernelUid || 0 == col.compare(_uid, _kernelUid))) {
+              LOGGER.trace("result AUTH_NONE(AUTH_EXTERNAL): OK");
               return SaslResult.OK;
             } else {
+              LOGGER.trace("result AUTH_NONE(AUTH_EXTERNAL): REJECT");
               return SaslResult.REJECT;
             }
           case AUTH_SHA:
@@ -342,13 +224,18 @@ public class SASL {
             LOGGER.debug("Sending challenge: {} {} {}", context, id, challenge);
 
             _c.setResponse(stupidlyEncode(context + ' ' + id + ' ' + challenge));
+
+            LOGGER.trace("result AUTH_NONE(AUTH_SHA): CONTINUE");
+
             return SaslResult.CONTINUE;
           default:
+            LOGGER.trace("result AUTH_ANON(default): ERROR");
             return SaslResult.ERROR;
         }
       case AUTH_SHA:
         String[] response = stupidlyDecode(_c.getData()).split(" ");
         if (response.length < 2) {
+          LOGGER.trace("result AUTH_SHA: ERROR");
           return SaslResult.ERROR;
         }
         String cchal = response[0];
@@ -358,16 +245,21 @@ public class SASL {
         String posthash = stupidlyEncode(buf);
         LOGGER.debug("Authenticating Hash; data={} remote-hash={} local-hash={}", prehash, hash, posthash);
         if (0 == col.compare(posthash, hash)) {
+          LOGGER.trace("result AUTH_SHA: OK");
           return SaslResult.OK;
         } else {
+          LOGGER.trace("result AUTH_SHA (2): ERROR");
           return SaslResult.ERROR;
         }
       default:
+        LOGGER.trace("result default: ERROR");
         return SaslResult.ERROR;
     }
   }
 
-  public String[] getTypes(int types) {
+  public String[] getTypes(EnumSet<AuthScheme> types) {
+    return AuthScheme.mechanics(types);
+    /*
     switch (types) {
       case AUTH_EXTERNAL:
         return new String[]{
@@ -400,9 +292,10 @@ public class SASL {
       default:
         return new String[]{};
     }
+     */
   }
 
-  /**
+  /*
    * performs SASL auth on the given streams.
    * Mode selects whether to run as a SASL server or client.
    * Types is a bitmask of the available auth types.
@@ -416,16 +309,16 @@ public class SASL {
    * @return true if the auth was successful and false if it failed.
    * @throws IOException on failure
    */
-  public boolean auth(SaslMode mode, int types, String guid, OutputStream out, InputStream in, Socket us) throws IOException {
+  public boolean auth(SaslMode mode, EnumSet<AuthScheme> types, String guid, OutputStream out, InputStream in, Socket us) throws IOException {
     String luid;
     String kernelUid = null;
 
     long uid = POSIXFactory.getJavaPOSIX().getuid();
     luid = stupidlyEncode("" + uid);
 
-    SASL.Command c;
-    int failed = 0;
-    int current = 0;
+    Command c;
+    EnumSet<AuthScheme> failed = EnumSet.noneOf(AuthScheme.class);
+    AuthScheme current = AUTH_NONE;
     SaslAuthState state = SaslAuthState.INITIAL_STATE;
 
     while (state != SaslAuthState.FINISHED && state != SaslAuthState.FAILED) {
@@ -484,15 +377,17 @@ public class SASL {
                   }
                   break;
                 case REJECTED:
-                  failed |= current;
-                  int available = c.getMechs() & (~failed);
-                  if (0 != (available & AUTH_EXTERNAL)) {
+                  failed.add(current);
+                  EnumSet<AuthScheme> available = c.getMechsSet();
+                  available.removeAll(failed);
+
+                  if (available.contains(AUTH_EXTERNAL)) {
                     send(out, AUTH, "EXTERNAL", luid);
                     current = AUTH_EXTERNAL;
-                  } else if (0 != (available & AUTH_SHA)) {
+                  } else if (available.contains(AUTH_SHA)) {
                     send(out, AUTH, "DBUS_COOKIE_SHA1", luid);
                     current = AUTH_SHA;
-                  } else if (0 != (available & AUTH_ANON)) {
+                  } else if (available.contains(AUTH_ANON)) {
                     send(out, AUTH, "ANONYMOUS");
                     current = AUTH_ANON;
                   } else {
@@ -500,7 +395,9 @@ public class SASL {
                   }
                   break;
                 case ERROR:
+                  // CHECK GP -- Always false
                   // when asking for file descriptor support, ERROR means FD support is not supported
+                  //noinspection ConstantConditions
                   if (state == SaslAuthState.NEGOTIATE_UNIX_FD) {
                     state = SaslAuthState.FINISHED;
                     LOGGER.trace("File descriptors NOT supported by server");
@@ -554,17 +451,18 @@ public class SASL {
                   state = SaslAuthState.WAIT_REJECT;
                   break;
                 case REJECTED:
-                  failed |= current;
-                  int available = c.getMechs() & (~failed);
+                  failed.add(current);
+                  EnumSet<AuthScheme> available = c.getMechsSet();
+                  available.removeAll(failed);
                   state = SaslAuthState.WAIT_DATA;
-                  if (0 != (available & AUTH_EXTERNAL)) {
-                    send(out, AUTH, "EXTERNAL", luid);
+                  if (available.contains(AUTH_EXTERNAL)) {
+                    send(out, AUTH, AUTH_EXTERNAL.getCommandName(), luid);
                     current = AUTH_EXTERNAL;
-                  } else if (0 != (available & AUTH_SHA)) {
-                    send(out, AUTH, "DBUS_COOKIE_SHA1", luid);
+                  } else if (available.contains(AUTH_SHA)) {
+                    send(out, AUTH, AUTH_SHA.getCommandName(), luid);
                     current = AUTH_SHA;
-                  } else if (0 != (available & AUTH_ANON)) {
-                    send(out, AUTH, "ANONYMOUS");
+                  } else if (available.contains(AUTH_ANON)) {
+                    send(out, AUTH, AUTH_NONE.getCommandName());
                     current = AUTH_ANON;
                   } else {
                     state = SaslAuthState.FAILED;
@@ -577,17 +475,20 @@ public class SASL {
               break;
             case WAIT_REJECT:
               c = receive(in);
+              //noinspection SwitchStatementWithTooFewBranches
               switch (c.getCommand()) {
                 case REJECTED:
-                  failed |= current;
-                  int available = c.getMechs() & (~failed);
-                  if (0 != (available & AUTH_EXTERNAL)) {
+                  failed.add(current);
+                  EnumSet<AuthScheme> available = c.getMechsSet();
+                  available.removeAll(failed);
+
+                  if (available.contains(AUTH_EXTERNAL)) {
                     send(out, AUTH, "EXTERNAL", luid);
                     current = AUTH_EXTERNAL;
-                  } else if (0 != (available & AUTH_SHA)) {
+                  } else if (available.contains(AUTH_SHA)) {
                     send(out, AUTH, "DBUS_COOKIE_SHA1", luid);
                     current = AUTH_SHA;
-                  } else if (0 != (available & AUTH_ANON)) {
+                  } else if (available.contains(AUTH_ANON)) {
                     send(out, AUTH, "ANONYMOUS");
                     current = AUTH_ANON;
                   } else {
@@ -649,12 +550,12 @@ public class SASL {
                     case OK:
                       send(out, SaslCommand.OK, guid);
                       state = SaslAuthState.WAIT_BEGIN;
-                      current = 0;
+                      current = AUTH_NONE;
                       break;
                     case REJECT:
                     default:
                       send(out, REJECTED, getTypes(types));
-                      current = 0;
+                      current = AUTH_NONE;
                       break;
                   }
                   break;
@@ -681,12 +582,12 @@ public class SASL {
                     case OK:
                       send(out, SaslCommand.OK, guid);
                       state = SaslAuthState.WAIT_BEGIN;
-                      current = 0;
+                      current = AUTH_NONE;
                       break;
                     case REJECT:
                     default:
                       send(out, REJECTED, getTypes(types));
-                      current = 0;
+                      current = AUTH_NONE;
                       break;
                   }
                   break;
@@ -740,132 +641,31 @@ public class SASL {
     return state == SaslAuthState.FINISHED;
   }
 
-  public enum SaslMode {
-    SERVER, CLIENT
-  }
 
-  public enum SaslCommand {
-    AUTH,
-    DATA,
-    REJECTED,
-    OK,
-    BEGIN,
-    CANCEL,
-    ERROR,
-    NEGOTIATE_UNIX_FD,
-    AGREE_UNIX_FD
-  }
 
-  enum SaslAuthState {
-    INITIAL_STATE,
-    WAIT_DATA,
-    WAIT_OK,
-    WAIT_REJECT,
-    WAIT_AUTH,
-    WAIT_BEGIN,
-    AUTHENTICATED,
-    NEGOTIATE_UNIX_FD,
-    FINISHED,
-    FAILED
-  }
 
-  enum SaslResult {
-    OK,
-    CONTINUE,
-    ERROR,
-    REJECT
-  }
-
-  public static class Command {
-    private final Logger C_LOGGER = LoggerFactory.getLogger(getClass());
-
-    private SaslCommand command;
-    private int mechs;
-    private String data;
-    private String response;
-
-    public Command() {
-    }
-
-    public Command(String s) throws IOException {
-      String[] ss = s.split(" ");
-      C_LOGGER.trace("Creating command from: {}", Arrays.toString(ss));
-      if (0 == col.compare(ss[0], "OK")) {
-        command = SaslCommand.OK;
-        data = ss[1];
-      } else if (0 == col.compare(ss[0], "AUTH")) {
-        command = AUTH;
-        if (ss.length > 1) {
-          if (0 == col.compare(ss[1], "EXTERNAL")) {
-            mechs = AUTH_EXTERNAL;
-          } else if (0 == col.compare(ss[1], "DBUS_COOKIE_SHA1")) {
-            mechs = AUTH_SHA;
-          } else if (0 == col.compare(ss[1], "ANONYMOUS")) {
-            mechs = AUTH_ANON;
-          }
-        }
-        if (ss.length > 2) {
-          data = ss[2];
-        }
-      } else if (0 == col.compare(ss[0], "DATA")) {
-        command = DATA;
-        data = ss[1];
-      } else if (0 == col.compare(ss[0], "REJECTED")) {
-        command = REJECTED;
-        for (int i = 1; i < ss.length; i++) {
-          if (0 == col.compare(ss[i], "EXTERNAL")) {
-            mechs |= AUTH_EXTERNAL;
-          } else if (0 == col.compare(ss[i], "DBUS_COOKIE_SHA1")) {
-            mechs |= AUTH_SHA;
-          } else if (0 == col.compare(ss[i], "ANONYMOUS")) {
-            mechs |= AUTH_ANON;
-          }
-        }
-      } else if (0 == col.compare(ss[0], "BEGIN")) {
-        command = BEGIN;
-      } else if (0 == col.compare(ss[0], "CANCEL")) {
-        command = CANCEL;
-      } else if (0 == col.compare(ss[0], "ERROR")) {
-        command = ERROR;
-        data = ss[1];
-      } else if (0 == col.compare(ss[0], "NEGOTIATE_UNIX_FD")) {
-        command = NEGOTIATE_UNIX_FD;
-      } else if (0 == col.compare(ss[0], "AGREE_UNIX_FD")) {
-        command = AGREE_UNIX_FD;
-      } else {
-        throw new IOException("Invalid Command " + ss[0]);
-      }
-      C_LOGGER.trace("Created command: {}", this);
-    }
-
-    public SaslCommand getCommand() {
-      return command;
-    }
-
-    public int getMechs() {
-      return mechs;
-    }
-
-    public String getData() {
-      return data;
-    }
-
-    public String getResponse() {
-      return response;
-    }
-
-    public void setResponse(String s) {
-      response = s;
-    }
-
-    @Override
-    public String toString() {
-      return "Command(" + command + ", " + mechs + ", " + data + ")";
-    }
-
-  }
 
   public boolean isFileDescriptorSupported() {
     return fileDescriptorSupported;
   }
+/*
+  // static builer for the state machine logic
+  private static StateMachine<SaslAuthState, SaslCommand> configureClientStateMachine() throws Exception {
+    StateMachineBuilder.Builder<SaslAuthState, SaslCommand> builder = StateMachineBuilder.builder();
+    builder.configureStates().withStates()
+        .initial(INITIAL_STATE)
+        .end(END_STATE)
+        .states(EnumSet.allOf(SaslAuthState.class));
+
+    builder.configureTransitions()
+        .withExternal()
+          .source(INITIAL_STATE).target(INITIALIZED).event()
+          .and()
+        .withExternal()
+          .source("S1").target("SF").event("E2");
+
+    StateMachine<String, String> machine = builder.build();
+  }
+
+ */
 }
