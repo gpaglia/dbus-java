@@ -456,13 +456,13 @@ public class SASLStateMachine {
                   available.removeAll(failed);
                   state = SaslAuthState.WAIT_DATA;
                   if (available.contains(AUTH_EXTERNAL)) {
-                    send(out, AUTH, AUTH_EXTERNAL.getCommandName(), luid);
+                    send(out, AUTH, AUTH_EXTERNAL.getAuthSchemeName(), luid);
                     current = AUTH_EXTERNAL;
                   } else if (available.contains(AUTH_SHA)) {
-                    send(out, AUTH, AUTH_SHA.getCommandName(), luid);
+                    send(out, AUTH, AUTH_SHA.getAuthSchemeName(), luid);
                     current = AUTH_SHA;
                   } else if (available.contains(AUTH_ANON)) {
-                    send(out, AUTH, AUTH_NONE.getCommandName());
+                    send(out, AUTH, AUTH_NONE.getAuthSchemeName());
                     current = AUTH_ANON;
                   } else {
                     state = SaslAuthState.FAILED;

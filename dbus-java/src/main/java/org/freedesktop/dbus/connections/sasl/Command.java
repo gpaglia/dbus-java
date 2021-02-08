@@ -15,7 +15,7 @@ public class Command {
   private static final Logger LOGGER = LoggerFactory.getLogger(Command.class);
 
   private SaslCommand command;
-  private EnumSet<AuthScheme> mechsSet = EnumSet.noneOf(AuthScheme.class);
+  private final EnumSet<AuthScheme> mechsSet = EnumSet.noneOf(AuthScheme.class);
   private AuthScheme mechs = AUTH_NONE;
   private String data;
   private String response;
@@ -32,7 +32,54 @@ public class Command {
 
   public Command(String s) throws IOException {
     String[] ss = s.split(" ");
-    LOGGER.trace("Creating command from: {}", Arrays.toString(ss));
+
+    command = SaslCommand.fromCommandName(ss[0]);
+
+    LOGGER.trace("Creating command from: {}, command: {}", Arrays.toString(ss), command);
+
+    switch (command) {
+      case OK:
+      case DATA:
+      case ERROR:
+        data = ss[1];
+        break;
+      case AUTH:
+        if (ss.length > 1) {
+          if (0 == col.compare(ss[1], AUTH_EXTERNAL.getAuthSchemeName())) {
+            mechs = AUTH_EXTERNAL;
+          } else if (0 == col.compare(ss[1], AUTH_SHA.getAuthSchemeName())) {
+            mechs = AUTH_SHA;
+          } else if (0 == col.compare(ss[1], AUTH_ANON.getAuthSchemeName())) {
+            mechs = AUTH_ANON;
+          } else {
+            mechs = AUTH_NONE;
+          }
+        }
+        if (ss.length > 2) {
+          data = ss[2];
+        }
+        break;
+      case REJECTED:
+        for (int i = 1; i < ss.length; i++) {
+          final AuthScheme as = AuthScheme.fromSchemeName(ss[i]);
+          LOGGER.trace("Adding scheme: {}", as);
+          if (as != AUTH_NONE) {
+            mechsSet.add(as);
+          }
+        }
+        break;
+      case BEGIN:
+      case CANCEL:
+      case NEGOTIATE_UNIX_FD:
+      case AGREE_UNIX_FD:
+        // nothing to do
+        break;
+      default:
+        throw new IOException("Invalid Command " + ss[0]);
+    }
+    LOGGER.trace("Created command: {}", this);
+
+    /*
     if (0 == col.compare(ss[0], "OK")) {
       command = SaslCommand.OK;
       data = ss[1];
@@ -82,6 +129,9 @@ public class Command {
     }
     LOGGER.trace("Created command: {}", this);
   }
+  */
+  }
+
   public SaslCommand getCommand() {
     return command;
   }
