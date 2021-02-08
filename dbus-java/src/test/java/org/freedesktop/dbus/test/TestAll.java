@@ -76,6 +76,7 @@ import org.freedesktop.dbus.test.helper.structs.SampleStruct2;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct3;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct4;
 import org.freedesktop.dbus.test.helper.structs.SampleTuple;
+import org.freedesktop.dbus.test.support.DisabledOnWindows;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
@@ -272,7 +273,7 @@ public class TestAll {
   }
 
   @Test
-  @Disabled("Fails, to be investigated -- may be mistake in test case")
+  @DisabledOnWindows// Fails, to be investigated -- may be mistake in test case
   public void testDBusNames() throws DBusException {
     System.out.println("These things are on the bus:");
 
