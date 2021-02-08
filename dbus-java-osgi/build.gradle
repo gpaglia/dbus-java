@@ -1,0 +1,38 @@
+plugins {
+    id 'java-library'
+    id 'biz.aQute.bnd.builder' version '5.2.0'
+    id 'io.wusa.semver-git-plugin'
+    id 'maven-publish'
+}
+
+
+description = 'osgi bundle format of dbus-java'
+
+
+jar {
+//    group = 'build'
+    //noinspection GroovyAssignabilityCheck
+    archiveClassifier = 'osgi'
+    from(project(':dbus-java').sourceSets.main.output) {
+        exclude 'module-info.class'
+    }
+}
+
+jar.dependsOn(project(':dbus-java').classes)
+
+
+/*
+// publishing
+publishing {
+    publications {
+        //noinspection GroovyAssignabilityCheck
+        dBusJavaLibrary(MavenPublication) {
+            from components.java
+            // artifact ...
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+ */

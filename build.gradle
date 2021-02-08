@@ -79,7 +79,7 @@ subprojects { Project subp ->
 
         subp.afterEvaluate { Project p ->
             p.task(type: Jar, 'testJar') {
-                group = "build"
+                group = 'build'
                 //noinspection GroovyAssignabilityCheck
                 archiveClassifier = 'tests'
                 from p.sourceSets.test.output

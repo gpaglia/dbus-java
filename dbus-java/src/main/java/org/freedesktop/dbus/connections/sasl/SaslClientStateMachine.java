@@ -28,6 +28,7 @@ public class SaslClientStateMachine extends SaslStateMachine {
 
   private boolean fileDescriptorSupported;
 
+  @SuppressWarnings("unused")
   protected SaslClientStateMachine() {
     super();
   }
@@ -52,7 +53,6 @@ public class SaslClientStateMachine extends SaslStateMachine {
   @Override
   public boolean auth(EnumSet<AuthScheme> types, String guid, OutputStream out, InputStream in, Socket us) throws IOException {
     String luid;
-    String kernelUid = null;
 
     long uid = POSIXFactory.getJavaPOSIX().getuid();
     luid = stupidlyEncode("" + uid);
@@ -134,31 +134,32 @@ public class SaslClientStateMachine extends SaslStateMachine {
               }
               break;
             case ERROR:
-              // CHECK GP -- Always false
-              // when asking for file descriptor support, ERROR means FD support is not supported
-              //noinspection ConstantConditions
+              // Edited by GP -- removed
+              /*
               if (state == SaslAuthState.NEGOTIATE_UNIX_FD) {
                 state = SaslAuthState.FINISHED;
                 LOGGER.trace("File descriptors NOT supported by server");
                 fileDescriptorSupported = false;
                 send(out, BEGIN);
               } else {
-                send(out, CANCEL);
-                state = SaslAuthState.WAIT_REJECT;
+               */
+              send(out, CANCEL);
+              state = SaslAuthState.WAIT_REJECT;
+              /*
               }
+               */
               break;
             case OK:
               LOGGER.trace("Authenticated");
               // Check GP
               // state = SaslAuthState.AUTHENTICATED;
-
               if (hasFileDescriptorSupport) {
                 // Check GP
                 // state = SaslAuthState.WAIT_DATA;
-                state = SaslAuthState.NEGOTIATE_UNIX_FD;
                 LOGGER.trace("Asking for file descriptor support");
                 // if authentication was successful, ask remote end for file descriptor support
                 send(out, SaslCommand.NEGOTIATE_UNIX_FD);
+                state = SaslAuthState.NEGOTIATE_UNIX_FD;
               } else {
                 state = SaslAuthState.FINISHED;
                 send(out, BEGIN);

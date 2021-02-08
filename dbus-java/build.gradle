@@ -3,9 +3,6 @@ plugins {
     id 'java-test-fixtures'
     id 'io.wusa.semver-git-plugin'
     id 'maven-publish'
-    // modularity disabled, not working
-    // id 'de.jjohannes.extra-java-module-info'
-    // id 'io.freefair.lombok'
 }
 
 // add the testFixtures java9 directory to sourceSets
