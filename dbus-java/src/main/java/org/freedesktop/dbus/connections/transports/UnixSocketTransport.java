@@ -1,10 +1,11 @@
 package org.freedesktop.dbus.connections.transports;
 
 import java.io.IOException;
+import java.util.EnumSet;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.FreeBSDHelper;
-import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.connections.sasl.AuthScheme;
 import org.freedesktop.dbus.utils.Util;
 
 import jnr.unixsocket.UnixServerSocketChannel;
@@ -33,7 +34,7 @@ public class UnixSocketTransport extends AbstractTransport {
             throw new IOException("Unix socket url has to specify 'path' or 'abstract'");
         }
 
-        setSaslAuthMode(SASL.AUTH_EXTERNAL);
+        setSaslAuthModes(EnumSet.of(AuthScheme.AUTH_EXTERNAL));
     }
 
     @Override

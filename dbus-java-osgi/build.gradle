@@ -1,0 +1,87 @@
+plugins {
+    id 'java-library'
+    id 'biz.aQute.bnd.builder'
+    id 'io.wusa.semver-git-plugin'
+    id 'maven-publish'
+}
+
+description = 'osgi bundle format of dbus-java'
+
+
+jar {
+// tasks.register('bundle',  Bundle) {
+//  classpath = "${project(':dbus-java').sourceSets.main.compileClasspath}"
+
+    from(project(':dbus-java').sourceSets.main.output) {
+        exclude 'module-info.class'
+    }
+
+    bnd (
+        'Bundle-SymbolicName': "${project.name}",
+        'Bundle-Name': "${project.name}",
+        'Bundle-Description': 'dbus-java-osgi',
+        'Bundle-Vendor': 'JCI',
+        'Bundle-Version': "${project.version}",
+        'Bundle-ActivationPolicy': 'lazy',
+        'Import-Package': 'org.slf4j, sun.misc, org.eclipse.jdt.annotation;resolution:=optional',
+//        'Export-Package': 'org.freedesktop.*',
+        '-exportcontents': 'org.freedesktop.*',
+        'Embed-Dependency':
+            '!junit-*,!slf4j*, !mockito*, !logback*, !apiguardian*, '
+            + '!opentest4j*, !objenesis, !org.eclipse.jdt.annotation*, '
+            + '!byte-buddy*, ;scope=compile|runtime',
+        'Embed-Transitive': 'true'
+    )
+    /*
+    manifest {
+        attributes(
+            '-exportcontents': 'com.acme.api.*',
+            '-sources': 'true',
+            '-include': 'other.bnd'
+        )
+    }
+     */
+    /*
+    <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Name>${project.name}</Bundle-Name>
+                        <Bundle-Description>dbus-java-osgi</Bundle-Description>
+                        <Bundle-Vendor>JCI</Bundle-Vendor>
+                        <Bundle-Version>${project.version}</Bundle-Version>
+                        <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
+                        <Import-Package> org.slf4j,
+                            sun.misc,
+                            org.eclipse.jdt.annotation;resolution:=optional
+                        </Import-Package>
+                        <Export-Package>org.freedesktop.*</Export-Package>
+                        <Embed-Dependency>!junit-*,!slf4j*, !mockito*,
+                            !logback*, !apiguardian*, !opentest4j*,
+                            !objenesis, !org.eclipse.jdt.annotation*,
+                            !byte-buddy*, ;scope=compile|runtime</Embed-Dependency>
+                        <Embed-Transitive>true</Embed-Transitive>
+     */
+}
+
+jar.dependsOn(project(':dbus-java').classes)
+
+/*
+artifacts {
+    archives bundle
+}
+*/
+
+/*
+// publishing
+publishing {
+    publications {
+        //noinspection GroovyAssignabilityCheck
+        dBusJavaLibrary(MavenPublication) {
+            from components.java
+            // artifact ...
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+ */

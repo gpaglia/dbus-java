@@ -3,8 +3,6 @@ package org.freedesktop.dbus.test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
-
 import org.freedesktop.dbus.connections.impl.DirectConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.Introspectable;
@@ -12,7 +10,7 @@ import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.test.helper.P2pTestServer;
 import org.freedesktop.dbus.test.helper.SampleException;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
-import org.junit.jupiter.api.Disabled;
+import org.freedesktop.dbus.test.support.DisabledOnWindows;
 import org.junit.jupiter.api.Test;
 
 public class TestPeer2Peer {
@@ -22,7 +20,7 @@ public class TestPeer2Peer {
   private static final String CONNECTION_ADDRESS = DirectConnection.createDynamicSession();
 
   @Test
-  @Disabled("Not applicable to Windows - requires AF_UNIX sockets")
+  @DisabledOnWindows() // Not applicable to Windows - requires AF_UNIX sockets
   public void testP2p() throws InterruptedException {
     P2pServer p2pServer = new P2pServer();
     p2pServer.start();

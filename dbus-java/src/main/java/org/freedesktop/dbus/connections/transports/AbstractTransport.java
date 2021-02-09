@@ -5,16 +5,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.EnumSet;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.connections.sasl.AuthScheme;
+import org.freedesktop.dbus.connections.sasl.SaslStateMachine;
+import org.freedesktop.dbus.connections.sasl.SaslMode;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.spi.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.freedesktop.dbus.connections.sasl.AuthScheme.*;
+import static org.freedesktop.dbus.connections.sasl.SaslStateMachine.createSaslStateMachine;
 
 /**
  * Base class for all transport types.
@@ -29,9 +35,9 @@ public abstract class AbstractTransport implements Closeable {
   private final Logger logger;
   private final BusAddress address;
 
-  private SASL.SaslMode saslMode;
+  private SaslMode saslMode;
 
-  private int saslAuthMode;
+  private EnumSet<AuthScheme> saslAuthModes;
   private IMessageReader inputReader;
   private IMessageWriter outputWriter;
 
@@ -41,12 +47,12 @@ public abstract class AbstractTransport implements Closeable {
     address = _address;
 
     if (_address.isListeningSocket()) {
-      saslMode = SASL.SaslMode.SERVER;
+      saslMode = SaslMode.SERVER;
     } else {
-      saslMode = SASL.SaslMode.CLIENT;
+      saslMode = SaslMode.CLIENT;
     }
 
-    saslAuthMode = SASL.AUTH_NONE;
+    saslAuthModes = EnumSet.of(AUTH_NONE);
     logger = LoggerFactory.getLogger(getClass());
   }
 
@@ -105,8 +111,8 @@ public abstract class AbstractTransport implements Closeable {
    * @throws IOException on any error
    */
   protected void authenticate(OutputStream _out, InputStream _in, Socket _sock) throws IOException {
-    SASL sasl = new SASL(hasFileDescriptorSupport());
-    if (!sasl.auth(saslMode, saslAuthMode, address.getGuid(), _out, _in, _sock)) {
+    SaslStateMachine sasl = createSaslStateMachine(saslMode, hasFileDescriptorSupport());
+    if (!sasl.auth(saslAuthModes, address.getGuid(), _out, _in, _sock)) {
       _out.close();
       throw new IOException("Failed to auth");
     }
@@ -155,21 +161,21 @@ public abstract class AbstractTransport implements Closeable {
   }
 
   @SuppressWarnings("unused")
-  protected int getSaslAuthMode() {
-    return saslAuthMode;
+  protected EnumSet<AuthScheme> getSaslAuthModes() {
+    return saslAuthModes;
   }
 
-  protected void setSaslAuthMode(int _saslAuthMode) {
-    saslAuthMode = _saslAuthMode;
+  protected void setSaslAuthModes(EnumSet<AuthScheme> _saslAuthMode) {
+    saslAuthModes = _saslAuthMode;
   }
 
   @SuppressWarnings("unused")
-  protected SASL.SaslMode getSaslMode() {
+  protected SaslMode getSaslMode() {
     return saslMode;
   }
 
   @SuppressWarnings("unused")
-  protected void setSaslMode(SASL.SaslMode _saslMode) {
+  protected void setSaslMode(SaslMode _saslMode) {
     saslMode = _saslMode;
   }
 

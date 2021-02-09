@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.EnumSet;
 
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.connections.sasl.AuthScheme;
 
 /**
  * Transport type representing a transport connection to TCP.
@@ -23,7 +24,7 @@ public class TcpTransport extends AbstractTransport {
   TcpTransport(BusAddress _address, int _timeout) {
     super(_address);
     timeout = _timeout;
-    setSaslAuthMode(SASL.AUTH_SHA);
+    setSaslAuthModes(EnumSet.of(AuthScheme.AUTH_SHA));
   }
 
     @Override

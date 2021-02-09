@@ -1,6 +1,6 @@
 package org.freedesktop.dbus.connections;
 
-import static org.freedesktop.dbus.connections.SASL.SaslCommand.*;
+import static org.freedesktop.dbus.connections.SASL__OLD.SaslCommand.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,7 +31,7 @@ import jnr.unixsocket.UnixSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SASL {
+public class SASL__OLD {
   private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
   public static final int LOCK_TIMEOUT = 1000;
@@ -62,7 +62,7 @@ public class SASL {
    * Create a new SASL auth handler.
    * Defaults to disable file descriptor passing.
    */
-  public SASL() {
+  public SASL__OLD() {
     this(false);
   }
 
@@ -71,7 +71,7 @@ public class SASL {
    *
    * @param _hasFileDescriptorSupport true to support file descriptor passing (usually only works with UNIX_SOCKET).
    */
-  public SASL(boolean _hasFileDescriptorSupport) {
+  public SASL__OLD(boolean _hasFileDescriptorSupport) {
     hasFileDescriptorSupport = _hasFileDescriptorSupport;
 
   }
@@ -221,7 +221,7 @@ public class SASL {
   public static final int AUTH_SHA = 2;
   public static final int AUTH_ANON = 4;
 
-  public SASL.Command receive(InputStream s) throws IOException {
+  public SASL__OLD.Command receive(InputStream s) throws IOException {
     StringBuffer sb = new StringBuffer();
     top:
     while (true) {
@@ -261,7 +261,7 @@ public class SASL {
     out.write(sb.toString().getBytes());
   }
 
-  private SaslResult doChallenge(int _auth, SASL.Command c) throws IOException {
+  private SaslResult doChallenge(int _auth, Command c) throws IOException {
     if (_auth == AUTH_SHA) {
       String[] reply = stupidlyDecode(c.getData()).split(" ");
       LOGGER.trace(Arrays.toString(reply));
@@ -305,7 +305,7 @@ public class SASL {
     return SaslResult.ERROR;
   }
 
-  private SaslResult doResponse(int _auth, String _uid, String _kernelUid, SASL.Command _c) {
+  private SaslResult doResponse(int _auth, String _uid, String _kernelUid, Command _c) {
     MessageDigest md;
     try {
       md = MessageDigest.getInstance("SHA");
@@ -423,7 +423,7 @@ public class SASL {
     long uid = POSIXFactory.getJavaPOSIX().getuid();
     luid = stupidlyEncode("" + uid);
 
-    SASL.Command c;
+    Command c;
     int failed = 0;
     int current = 0;
     SaslAuthState state = SaslAuthState.INITIAL_STATE;
@@ -467,6 +467,7 @@ public class SASL {
               break;
             case WAIT_DATA:
               c = receive(in);
+              //noinspection EnumSwitchStatementWhichMissesCases
               switch (c.getCommand()) {
                 case DATA:
                   switch (doChallenge(current, c)) {
@@ -500,7 +501,9 @@ public class SASL {
                   }
                   break;
                 case ERROR:
+                  // CHECK GP -- Always false
                   // when asking for file descriptor support, ERROR means FD support is not supported
+                  //noinspection ConstantConditions
                   if (state == SaslAuthState.NEGOTIATE_UNIX_FD) {
                     state = SaslAuthState.FINISHED;
                     LOGGER.trace("File descriptors NOT supported by server");
@@ -577,6 +580,7 @@ public class SASL {
               break;
             case WAIT_REJECT:
               c = receive(in);
+              //noinspection SwitchStatementWithTooFewBranches
               switch (c.getCommand()) {
                 case REJECTED:
                   failed |= current;
@@ -777,7 +781,7 @@ public class SASL {
   }
 
   public static class Command {
-    private final Logger C_LOGGER = LoggerFactory.getLogger(getClass());
+    private static final Logger C_LOGGER = LoggerFactory.getLogger(Command.class);
 
     private SaslCommand command;
     private int mechs;

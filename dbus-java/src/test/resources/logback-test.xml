@@ -12,6 +12,7 @@
     <logger name="org" level="INFO" />
     <logger name="cx.ath.matthew" level="INFO" />
     <logger name="org.freedesktop.dbus.connections" level="INFO" />
+    <logger name="org.freedesktop.dbus.connections.sasl" level="INFO" />
     <logger name="org.freedesktop.dbus.errors" level="INFO" />
     <logger name="org.freedesktop.dbus.messages" level="INFO" />
     <logger name="org.freedesktop.dbus.Marshalling" level="INFO" />
