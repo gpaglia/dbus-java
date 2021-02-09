@@ -13,7 +13,12 @@ pluginManagement {
 
     //noinspection GroovyAssignabilityCheck
     plugins {
+        // semantic version
         id 'io.wusa.semver-git-plugin' version "${dbus__wusaSemverPluginVersion}"
+
+        // bnd / osgi
+        id 'biz.aQute.bnd.builder' version "${dbus__bndPluginVersion}"
+
         // disable for now
         // id 'org.javamodularity.moduleplugin' version "${dbus__modularityPluginVersion}"
 

@@ -36,10 +36,12 @@ subprojects { Project subp ->
         subp.java {
             sourceCompatibility = JavaVersion.VERSION_11
             targetCompatibility = JavaVersion.VERSION_11
-            withJavadocJar()
-            withSourcesJar()
-            // modularity enabled
-            modularity.inferModulePath = true
+            if (! subp.getName().endsWith('osgi')) {
+                withJavadocJar()
+                withSourcesJar()
+                // modularity enabled
+                modularity.inferModulePath = true
+            }
         }
 
         // modularity enabled
@@ -87,17 +89,21 @@ subprojects { Project subp ->
 
             // p.jar.dependsOn testJar
 
-            artifacts {
-                archives sourcesJar, javadocJar, testJar
+            if (! subp.getName().endsWith('osgi')) {
+                artifacts {
+                    archives sourcesJar, javadocJar, testJar
+                }
             }
 
             // publishing
             p.publishing {
                 publications.create("publish-${p.name}", MavenPublication) {
                     artifact jar
-                    artifact sourcesJar
-                    artifact javadocJar
-                    artifact testJar
+                    if (! p.getName().endsWith('osgi')) {
+                        artifact sourcesJar
+                        artifact javadocJar
+                        artifact testJar
+                    }
                 }
 
                 repositories {

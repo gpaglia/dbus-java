@@ -2,7 +2,12 @@
 // Updated Jan 29th, 2021 by gpaglia
 ext {
     // plugins
+    // semantic version
     dbus__wusaSemverPluginVersion = '2.3.7'
+
+    // bnd / osgi
+    dbus__bndPluginVersion = '5.2.0'
+
     // disable for now
     // dbus__modularityPluginVersion = '1.7.0'
     // dbus__lombokPluginVersion = '5.3.0'

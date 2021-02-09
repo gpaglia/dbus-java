@@ -16,7 +16,10 @@ public abstract class SaslStateMachine {
 
   /**
    * Factory method to create a state machine instance in the client or server mode
+   * @param mode the {@link SaslMode} specifying either {@link SaslMode#CLIENT} or {@link SaslMode#SERVER}
+   * @param _hasFileDescriptorSupport boolean, if true indicates that passing file descriptors on UNIX socket is supported
    *
+   * @return a {@link SaslStateMachine} of the proper subtype, duly initialized
    */
   public static SaslStateMachine createSaslStateMachine(final SaslMode mode, final boolean _hasFileDescriptorSupport)
       throws IllegalArgumentException
