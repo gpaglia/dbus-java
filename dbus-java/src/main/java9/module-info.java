@@ -13,7 +13,7 @@ module org.freedesktop.dbus {
     exports org.freedesktop.dbus.messages;
     exports org.freedesktop.dbus.spi;
     exports org.freedesktop.dbus.types;
-    exports org.freedesktop.dbus.utils;
+    exports org.freedesktop.dbus.support;
 
     requires java.datatransfer;
     requires java.desktop;
