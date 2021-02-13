@@ -11,6 +11,8 @@ build/
 
 dbus-java-osgi/META-INF
 
+*.log
+
 #gradle
 .gradle
 **/build/
