@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.utils;
+package org.freedesktop.dbus.support;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -24,7 +24,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.freedesktop.dbus.utils.XmlErrorHandlers.XmlErrorHandlerQuiet;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -186,7 +185,7 @@ public final class XmlUtil {
 
     /**
      * Loads XML from string and uses referenced XSD to validate the content.
-     * This method will use {@link XmlErrorHandlerQuiet} to suppress all errors/warnings when validating.
+     * This method will use {@link XmlErrorHandlers.XmlErrorHandlerQuiet} to suppress all errors/warnings when validating.
      *
      * @param _xmlStr string to validate
      * @param _namespaceAware take care of namespace

@@ -1,6 +1,6 @@
 package org.freedesktop.dbus.messages;
 
-import org.freedesktop.dbus.utils.Hexdump;
+import org.freedesktop.dbus.support.Hexdump;
 import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusException;

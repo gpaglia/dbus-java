@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.utils;
+package org.freedesktop.dbus.support;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;

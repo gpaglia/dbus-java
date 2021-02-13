@@ -1,6 +1,6 @@
 package org.freedesktop.dbus.test.support;
 
-import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.support.Util;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;

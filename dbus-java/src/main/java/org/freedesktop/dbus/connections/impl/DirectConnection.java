@@ -38,8 +38,8 @@ import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
-import org.freedesktop.dbus.utils.Hexdump;
-import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.support.Hexdump;
+import org.freedesktop.dbus.support.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

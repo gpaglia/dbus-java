@@ -1,7 +1,7 @@
 package org.freedesktop.dbus.utils.generator;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
-import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.support.Util;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.StringUtils;
 import org.slf4j.Logger;
@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.Map;
 
+import static org.freedesktop.dbus.support.Util.isWindows;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InterfaceCodeGeneratorTest {
@@ -39,7 +40,7 @@ class InterfaceCodeGeneratorTest {
     }
   }
 
-  // On windows only 17 items are generated instead f the expected 20 -- to be understood
+  // On windows only 17 items are generated instead of the expected 20 -- to be understood
   @Test
   void testCreateAllFirewallInterfaces() {
     String objectPath = "/org/fedoraproject/FirewallD1";
@@ -52,7 +53,7 @@ class InterfaceCodeGeneratorTest {
 
     if (!StringUtils.isBlank(busName)) {
       String introspectionData = Util.readFileToString(new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"));
-      int expectedNo = Util.isWindows() ? 17 : 20;
+      int expectedNo = isWindows() ? 17 : 20;
 
       InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(introspectionData, objectPath, busName);
       try {

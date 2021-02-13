@@ -76,12 +76,11 @@ import org.freedesktop.dbus.test.helper.structs.SampleStruct2;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct3;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct4;
 import org.freedesktop.dbus.test.helper.structs.SampleTuple;
-import org.freedesktop.dbus.test.support.DisabledOnWindows;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
 import org.freedesktop.dbus.types.Variant;
-import org.freedesktop.dbus.utils.TimeMeasure;
+import org.freedesktop.dbus.support.TimeMeasure;
 import org.junit.jupiter.api.*;
 
 /**

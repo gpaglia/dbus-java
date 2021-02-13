@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.support.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

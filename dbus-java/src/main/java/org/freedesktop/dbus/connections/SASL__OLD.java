@@ -23,7 +23,7 @@ import java.util.Random;
 
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.utils.Hexdump;
+import org.freedesktop.dbus.support.Hexdump;
 
 import jnr.posix.POSIXFactory;
 import jnr.unixsocket.Credentials;

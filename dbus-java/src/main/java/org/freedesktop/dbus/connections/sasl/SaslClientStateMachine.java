@@ -3,7 +3,7 @@ package org.freedesktop.dbus.connections.sasl;
 import jnr.posix.POSIXFactory;
 import org.freedesktop.dbus.connections.FreeBSDHelper;
 import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.utils.Hexdump;
+import org.freedesktop.dbus.support.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

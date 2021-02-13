@@ -32,7 +32,7 @@ import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
-import org.freedesktop.dbus.utils.LoggingHelper;
+import org.freedesktop.dbus.support.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

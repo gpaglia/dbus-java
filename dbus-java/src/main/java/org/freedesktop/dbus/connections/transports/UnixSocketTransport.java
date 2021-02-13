@@ -6,7 +6,7 @@ import java.util.EnumSet;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.FreeBSDHelper;
 import org.freedesktop.dbus.connections.sasl.AuthScheme;
-import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.support.Util;
 
 import jnr.unixsocket.UnixServerSocketChannel;
 import jnr.unixsocket.UnixSocketAddress;

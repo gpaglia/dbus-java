@@ -1,7 +1,7 @@
 package org.freedesktop.dbus.utils.generator;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
-import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.support.Util;
 
 import java.io.File;
 import java.lang.annotation.Annotation;

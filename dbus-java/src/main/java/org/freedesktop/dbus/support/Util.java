@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.utils;
+package org.freedesktop.dbus.support;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,6 +31,12 @@ import org.slf4j.LoggerFactory;
 public final class Util {
     private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
 
+    private static final String OS = System.getProperty("os.name").toLowerCase();
+    public static boolean IS_WINDOWS = OS.contains("win");
+    public static boolean IS_MAC = OS.contains("mac");
+    public static boolean IS_UNIX = OS.contains("nix") || OS.contains("nux") || OS.contains("aix");
+    public static boolean IS_SOLARIS = OS.contains("sunos");
+
     /** Characters used for random strings */
     private static final char[] SYMBOLS;
 
@@ -49,7 +55,7 @@ public final class Util {
 
 
     /**
-     * Trys to read a properties file.
+     * Tries to read a properties file.
      * Returns null if properties file could not be loaded
      * @param _file the file to read properties from
      * @return Properties Object or null
@@ -415,9 +421,7 @@ public final class Util {
      * @return true if MacOS (or MacOS X), false otherwise
      */
     public static boolean isMacOs() {
-        String osName = System.getProperty("os.name");
-        //noinspection SimplifiableConditionalExpression
-        return osName == null ? false : osName.toLowerCase().startsWith("mac");
+        return IS_MAC;
     }
 
     /**
@@ -425,9 +429,24 @@ public final class Util {
      * @return true if Windows, false otherwise
      */
     public static boolean isWindows() {
-        String osName = System.getProperty("os.name");
-        //noinspection SimplifiableConditionalExpression
-        return osName == null ? false : osName.toLowerCase().startsWith("windows");
+        return IS_WINDOWS;
+    }
+
+    /**
+     * Checks if the running OS is a unix.
+     * @return true if Unix, false otherwise
+     */
+    public static boolean isUnix() {
+        return IS_UNIX;
+    }
+
+    /**
+     * Checks if the running OS is Solaris.
+     * @return true if Solaris, false otherwise
+     */
+    @SuppressWarnings("unused")
+    public static boolean isSOlaris() {
+        return IS_SOLARIS;
     }
 
 }

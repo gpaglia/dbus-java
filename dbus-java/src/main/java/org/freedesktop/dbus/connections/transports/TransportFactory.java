@@ -5,7 +5,7 @@ import java.util.Random;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.BusAddress.AddressBusTypes;
-import org.freedesktop.dbus.utils.Hexdump;
+import org.freedesktop.dbus.support.Hexdump;
 import org.slf4j.LoggerFactory;
 
 /**

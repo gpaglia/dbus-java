@@ -17,7 +17,7 @@ import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.types.UInt32;
-import org.freedesktop.dbus.utils.Hexdump;
+import org.freedesktop.dbus.support.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

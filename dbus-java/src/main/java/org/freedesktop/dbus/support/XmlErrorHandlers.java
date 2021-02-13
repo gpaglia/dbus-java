@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.utils;
+package org.freedesktop.dbus.support;
 
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;

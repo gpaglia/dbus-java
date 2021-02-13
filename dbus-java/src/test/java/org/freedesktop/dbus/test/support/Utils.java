@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.test;
+package org.freedesktop.dbus.test.support;
 
 public class Utils {
   public static void sleep(long delay) {

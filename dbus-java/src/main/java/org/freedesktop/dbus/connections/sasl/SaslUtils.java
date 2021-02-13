@@ -1,7 +1,7 @@
 package org.freedesktop.dbus.connections.sasl;
 
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.utils.Hexdump;
+import org.freedesktop.dbus.support.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

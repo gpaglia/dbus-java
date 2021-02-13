@@ -21,8 +21,8 @@ import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
 import org.freedesktop.dbus.types.Variant;
-import org.freedesktop.dbus.utils.Hexdump;
-import org.freedesktop.dbus.utils.LoggingHelper;
+import org.freedesktop.dbus.support.Hexdump;
+import org.freedesktop.dbus.support.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

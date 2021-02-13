@@ -31,7 +31,7 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.types.UInt32;
-import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.support.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

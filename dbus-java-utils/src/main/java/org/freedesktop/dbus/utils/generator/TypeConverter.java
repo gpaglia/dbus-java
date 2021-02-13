@@ -5,7 +5,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.DBusMapType;
 import org.freedesktop.dbus.types.Variant;
-import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.support.Util;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

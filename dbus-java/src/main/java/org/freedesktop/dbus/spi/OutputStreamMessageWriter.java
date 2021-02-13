@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.utils.Hexdump;
+import org.freedesktop.dbus.support.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

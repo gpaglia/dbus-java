@@ -27,7 +27,7 @@ import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.fixtures.TestDaemonFixtures;
-import org.freedesktop.dbus.test.Utils;
+import org.freedesktop.dbus.test.support.Utils;
 import org.freedesktop.dbus.test.collections.empty.structs.ArrayStructIntStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.ArrayStructPrimitive;
 import org.freedesktop.dbus.test.collections.empty.structs.DeepArrayStruct;

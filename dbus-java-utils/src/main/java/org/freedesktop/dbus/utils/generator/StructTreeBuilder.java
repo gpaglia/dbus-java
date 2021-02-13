@@ -4,7 +4,7 @@ import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.support.Util;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;

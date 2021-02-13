@@ -2,7 +2,7 @@ package org.freedesktop.dbus.fixtures;
 
 import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.support.Util;
 
 import java.io.IOException;
 

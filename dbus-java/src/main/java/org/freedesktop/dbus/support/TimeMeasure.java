@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.utils;
+package org.freedesktop.dbus.support;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
