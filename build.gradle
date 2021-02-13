@@ -73,6 +73,8 @@ subprojects { Project subp ->
             useJUnitPlatform {
                 // options here
             }
+            testLogging.showStandardStreams = true
+            testLogging.exceptionFormat = 'full'
         }
 
         subp.tasks.withType(Javadoc) {

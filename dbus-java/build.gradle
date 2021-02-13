@@ -5,6 +5,8 @@ plugins {
     id 'maven-publish'
 }
 
+import org.apache.tools.ant.taskdefs.condition.Os
+
 // add the testFixtures java9 directory to sourceSets
 sourceSets {
     //noinspection GroovyAssignabilityCheck
@@ -67,7 +69,9 @@ dependencies {
 }
 
 tasks.withType(Test) {
-    environment 'DBUS_SESSION_BUS_ADDRESS', 'tcp:host=localhost,port=54321,family=ipv4'
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        environment 'DBUS_SESSION_BUS_ADDRESS', 'tcp:host=localhost,port=54321,family=ipv4'
+    }
 }
 
 /*

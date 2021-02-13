@@ -273,7 +273,7 @@ public class TestAll {
   }
 
   @Test
-  @DisabledOnWindows// Fails, to be investigated -- may be mistake in test case
+  @Disabled() // Fails, to be investigated -- may be mistake in test case
   public void testDBusNames() throws DBusException {
     System.out.println("These things are on the bus:");
 
