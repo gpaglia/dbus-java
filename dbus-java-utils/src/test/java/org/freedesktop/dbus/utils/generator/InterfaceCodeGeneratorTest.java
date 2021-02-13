@@ -10,10 +10,14 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.Map;
 
-import static org.freedesktop.dbus.support.Util.isWindows;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InterfaceCodeGeneratorTest {
+
+  private static final boolean IS_WINDOWS = System
+      .getProperty("os.name")
+      .toLowerCase()
+      .contains("win");
 
   @Test
   void testCreateFirewallInterfaces() {
@@ -53,7 +57,7 @@ class InterfaceCodeGeneratorTest {
 
     if (!StringUtils.isBlank(busName)) {
       String introspectionData = Util.readFileToString(new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"));
-      int expectedNo = isWindows() ? 17 : 20;
+      int expectedNo = IS_WINDOWS ? 17 : 20;
 
       InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(introspectionData, objectPath, busName);
       try {
