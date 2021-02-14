@@ -30,6 +30,9 @@ allprojects { Project prj ->
 }
 
 subprojects { Project subp ->
+    subp.getPlugins().withId('application') {
+        subp.application.getMainClass().set(project.hasProperty("mainClass") ? getProperty("mainClass") : "NULL")
+    }
     subp.getPlugins().withId('java') {
 
         // set java version and other standards for projects with java plugin installed

@@ -3,6 +3,7 @@ plugins {
     id 'java-test-fixtures'
     id 'io.wusa.semver-git-plugin'
     id 'maven-publish'
+    id 'application'
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os
