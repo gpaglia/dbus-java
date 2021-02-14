@@ -3,6 +3,7 @@ package org.freedesktop.dbus.utils.bin;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.ObjectManager;
 import org.freedesktop.dbus.types.Variant;
 import org.slf4j.Logger;
@@ -45,22 +46,49 @@ public class AdvMonitorExample {
 
   private static final int CONNECTION_TIMEOUT = 5000; // in ms
 
-  private final DBusConnection conn;
-  private final String busName;
-  private final ObjectManager om;
+  public interface AdvertisementMonitorManager1 extends DBusInterface {
+    void RegisterApplication(DBusPath applicationPath);
+    void UnregisterApplication(DBusPath applicationPath);
+  }
 
   public static void main(String[] args) {
     final int appId = (args.length == 0 || !args[1].matches("[0-9]+")) ? 0 : Integer.valueOf(args[1]);
+    final String appPath = ADV_MONITOR_APP_BASE_PATH + appId;
 
-    LOGGER.info("Setting app_id to %d\n", appId);
 
     try (DBusConnection conn = DBusConnection.getConnection(
         DBusConnection.DBusBusType.SYSTEM,
         false,
         CONNECTION_TIMEOUT)
     ) {
-      final AdvMonitorExample ame = new AdvMonitorExample(conn, appId);
+      LOGGER.info("Starting with uniqueName={}, appId={}, appTaht={}\n", conn.getUniqueName(), appId, appPath);
 
+      ObjectManager om = conn.getRemoteObject(BLUEZ_SERVICE_NAME, "/", ObjectManager.class);
+      if (om == null) {
+        LOGGER.error("Could not get a reference to ObjectManager for service {} in path /", BLUEZ_SERVICE_NAME);
+        System.exit(1);
+      }
+
+      showObjectsAndInterfaces(om);
+
+      final DBusPath mgrPath = findAdapter(om);
+      if (om == null) {
+        LOGGER.error("Could not find any supportive adapter object");
+        System.exit(1);
+      }
+
+      final AdvertisementMonitorManager1 mgr = conn.getRemoteObject(
+          BLUEZ_SERVICE_NAME,
+          mgrPath.toString(),
+          AdvertisementMonitorManager1.class
+      );
+
+      if (mgr == null) {
+        LOGGER.error("Could not find any AdvertisementMonitorManager1 on path {}", mgrPath.toString());
+        System.exit(1);
+      }
+
+      LOGGER.info("Exit normally");
 
     } catch (DBusException de) {
       LOGGER.error("Got DBusException", de);
@@ -69,29 +97,7 @@ public class AdvMonitorExample {
     }
   }
 
-  public AdvMonitorExample(final DBusConnection conn, final int appId) throws DBusException {
-    this.busName = ADV_MONITOR_APP_BASE_PATH + appId;
-    this.conn = conn;
-
-    
-    LOGGER.info("Unique bus name {}", this.conn.getUniqueName());
-
-    this.om = conn.getRemoteObject(BLUEZ_SERVICE_NAME, "/", ObjectManager.class);
-
-    final Map<DBusPath, Map<String, Map<String, Variant<?>>>> objects = om.GetManagedObjects();
-
-    // list all paths discovered
-    for (DBusPath p: objects.keySet()) {
-      final Map<String, Map<String, Variant<?>>> ifaces = objects.get(p);
-
-      LOGGER.info(" ... discovered path {}", p.toString());
-
-      for (String iface: ifaces.keySet()) {
-        LOGGER.info("... -- with interface {}", iface);
-      }
-    }
-
-    // find the adv monitor manager object if any ...
+  private static DBusPath findAdapter(final ObjectManager om) {
     final Map.Entry<DBusPath, Map<String, Map<String, Variant<?>>>> found = om
         .GetManagedObjects()
         .entrySet()
@@ -100,14 +106,29 @@ public class AdvMonitorExample {
         .findFirst()
         .orElse(null);
 
-    if (found == null) {
-      LOGGER.info("No advertisement monitor manager found, exiting ...");
-      System.exit(1);
+    if (found != null) {
+      LOGGER.info("Found adapter with AdvertisementMonitorManager support, listing manager properties ...");
+      for (Map.Entry<String, Variant<?>> prop : found.getValue().get(ADV_MONITOR_MANAGER_IFACE).entrySet()) {
+        LOGGER.info("\t property >> key: {}, value: {}", prop.getKey(), prop.getValue().toString());
+      }
     }
 
-    LOGGER.info("Found advertisement monitor manager, listing proeprties ...");
-    for (Map.Entry<String, Variant<?>> prop : found.getValue().get(ADV_MONITOR_MANAGER_IFACE).entrySet()) {
-      LOGGER.info(" ... property {} -> {}", prop.getKey(), prop.getValue().toString());
+    return found.getKey();
+  }
+
+  private static void showObjectsAndInterfaces(final ObjectManager om) {
+    final Map<DBusPath, Map<String, Map<String, Variant<?>>>> objects = om.GetManagedObjects();
+
+    // list all paths discovered
+    for (DBusPath p: objects.keySet()) {
+      final Map<String, Map<String, Variant<?>>> ifaces = objects.get(p);
+
+      LOGGER.info("\t >> discovered path {}", p.toString());
+
+      for (String iface: ifaces.keySet()) {
+        LOGGER.info("\t\t >> with interface {}", iface);
+      }
     }
+
   }
 }
