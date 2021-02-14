@@ -52,7 +52,7 @@ public class AdvMonitorExample {
   public static void main(String[] args) {
     final int appId = (args.length == 0 || !args[1].matches("[0-9]+")) ? 0 : Integer.valueOf(args[1]);
 
-    LOGGER.info("Stting app_id to %d\n", appId);
+    LOGGER.info("Setting app_id to %d\n", appId);
 
     try (DBusConnection conn = DBusConnection.getConnection(
         DBusConnection.DBusBusType.SYSTEM,
@@ -72,8 +72,24 @@ public class AdvMonitorExample {
   public AdvMonitorExample(final DBusConnection conn, final int appId) throws DBusException {
     this.busName = ADV_MONITOR_APP_BASE_PATH + appId;
     this.conn = conn;
-    this.om = conn.getRemoteObject(BLUEZ_SERVICE_NAME, DBUS_OM_INTERFACE, ObjectManager.class);
-    conn.requestBusName(this.busName);
+
+    
+    LOGGER.info("Unique bus name {}", this.conn.getUniqueName());
+
+    this.om = conn.getRemoteObject(BLUEZ_SERVICE_NAME, "/", ObjectManager.class);
+
+    final Map<DBusPath, Map<String, Map<String, Variant<?>>>> objects = om.GetManagedObjects();
+
+    // list all paths discovered
+    for (DBusPath p: objects.keySet()) {
+      final Map<String, Map<String, Variant<?>>> ifaces = objects.get(p);
+
+      LOGGER.info(" ... discovered path {}", p.toString());
+
+      for (String iface: ifaces.keySet()) {
+        LOGGER.info("... -- with interface {}", iface);
+      }
+    }
 
     // find the adv monitor manager object if any ...
     final Map.Entry<DBusPath, Map<String, Map<String, Variant<?>>>> found = om
