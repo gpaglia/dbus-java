@@ -3,10 +3,7 @@ plugins {
     id 'io.wusa.semver-git-plugin'
 }
 
-
 description = 'Evolution of github.com:hypfvieh/dbus-java.git [gradle, java 11, windows compat]'
-
-// version = semver.info
 
 allprojects { Project prj ->
     prj.group = 'com.gpaglia.dbus'
@@ -33,6 +30,7 @@ subprojects { Project subp ->
     subp.getPlugins().withId('application') {
         subp.application.getMainClass().set(project.hasProperty("mainClass") ? getProperty("mainClass") : "NULL")
     }
+
     subp.getPlugins().withId('java') {
 
         // set java version and other standards for projects with java plugin installed
@@ -87,12 +85,9 @@ subprojects { Project subp ->
         subp.afterEvaluate { Project p ->
             p.task(type: Jar, 'testJar') {
                 group = 'build'
-                //noinspection GroovyAssignabilityCheck
-                archiveClassifier = 'tests'
+                archiveClassifier.set('tests')
                 from p.sourceSets.test.output
             }
-
-            // p.jar.dependsOn testJar
 
             if (! subp.getName().endsWith('osgi')) {
                 artifacts {

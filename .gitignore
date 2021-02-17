@@ -7,9 +7,6 @@ target/
 *.iml
 
 .idea
-build/
-
-dbus-java-osgi/META-INF
 
 *.log
 
@@ -30,5 +27,7 @@ gradle-app.setting
 
 # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
+
 /address
 
+dbus-java-osgi/META-INF
