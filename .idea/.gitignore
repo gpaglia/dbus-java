@@ -1,0 +1,11 @@
+# Default ignored files + customized by gpaglia
+/shelf/
+/workspace.xml
+/usage.statistics.xml
+/tasks.xml
+/gradle.xml
+/libraries/
+modules.xml
+dataSources.ids
+datasources.xml
+

@@ -6,7 +6,8 @@ target/
 .project
 *.iml
 
-.idea
+# removed as there is one specific .gitignore file in the .idea directory
+#.idea
 
 *.log
 
