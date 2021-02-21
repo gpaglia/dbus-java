@@ -38,6 +38,3 @@ include 'dbus-platform',
         'dbus-java',
         'dbus-java-utils',
         'dbus-java-osgi'
-/*
- removed 'dbus-java-osgi' as handled asadditional jar task in dbus-java
- */
