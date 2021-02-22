@@ -98,12 +98,9 @@ subprojects { Project subp ->
             // publishing
             p.publishing {
                 publications.create("publish-${p.name}", MavenPublication) {
-                    artifact jar
-                    if (! p.getName().endsWith('-osgi')) {
-                        artifact sourcesJar
-                        artifact javadocJar
-                        artifact testJar
-                    }
+                    // needed to have the dependencies in the pom
+                    from components.java
+                    // to be understood how to publish testJar
                 }
 
                 repositories {
