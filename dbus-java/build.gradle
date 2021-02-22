@@ -42,7 +42,7 @@ dependencies {
     api platform(project(':dbus-platform'))
 
     // slf4j
-    api group: 'org.slf4j', name: 'slf4j-api'
+    implementation group: 'org.slf4j', name: 'slf4j-api'
 
     // logback
     runtimeOnly group: 'ch.qos.logback', name: 'logback-classic'
@@ -54,7 +54,7 @@ dependencies {
     */
 
     // https://mvnrepository.com/artifact/com.github.jnr/jnr-unixsocket
-    api group: 'com.github.jnr', name: 'jnr-unixsocket'
+    implementation group: 'com.github.jnr', name: 'jnr-unixsocket'
 
     // junit
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter'
