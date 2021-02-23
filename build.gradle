@@ -119,7 +119,6 @@ subprojects { Project subp ->
 
     subp.getPlugins().withId('java-platform') {
         subp.afterEvaluate { Project p ->
-            print "*** Publishing for platform ***"
             p.publishing {
                 publications.create("publish-${p.name}", MavenPublication) {
                     from components.javaPlatform
