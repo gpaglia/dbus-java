@@ -101,6 +101,14 @@ subprojects { Project subp ->
                     // needed to have the dependencies in the pom
                     from components.java
                     // to be understood how to publish testJar
+                    versionMapping {
+                        usage('java-api') {
+                            fromResolutionOf('runtimeClasspath')
+                        }
+                        usage('java-runtime') {
+                            fromResolutionResult()
+                        }
+                    }
                 }
 
                 repositories {
