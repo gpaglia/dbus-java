@@ -99,14 +99,18 @@ subprojects { Project subp ->
             p.publishing {
                 publications.create("publish-${p.name}", MavenPublication) {
                     // needed to have the dependencies in the pom
-                    from components.java
-                    // to be understood how to publish testJar
-                    versionMapping {
-                        usage('java-api') {
-                            fromResolutionOf('runtimeClasspath')
-                        }
-                        usage('java-runtime') {
-                            fromResolutionResult()
+                    if (p.name.endsWith("-platform")) {
+                        from components.javaPlatform
+                    } else {
+                        from components.java
+                        // to be understood how to publish testJar
+                        versionMapping {
+                            usage('java-api') {
+                                fromResolutionOf('runtimeClasspath')
+                            }
+                            usage('java-runtime') {
+                                fromResolutionResult()
+                            }
                         }
                     }
                 }
