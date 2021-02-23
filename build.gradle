@@ -32,7 +32,6 @@ subprojects { Project subp ->
     }
 
     subp.getPlugins().withId('java') {
-
         // set java version and other standards for projects with java plugin installed
         subp.java {
             sourceCompatibility = JavaVersion.VERSION_11
@@ -99,22 +98,32 @@ subprojects { Project subp ->
             p.publishing {
                 publications.create("publish-${p.name}", MavenPublication) {
                     // needed to have the dependencies in the pom
-                    if (p.name.endsWith("-platform")) {
-                        from components.javaPlatform
-                    } else {
-                        from components.java
-                        // to be understood how to publish testJar
-                        versionMapping {
-                            usage('java-api') {
-                                fromResolutionOf('runtimeClasspath')
-                            }
-                            usage('java-runtime') {
-                                fromResolutionResult()
-                            }
+                    from components.java
+                    // to be understood how to publish testJar
+                    versionMapping {
+                        usage('java-api') {
+                            fromResolutionOf('runtimeClasspath')
+                        }
+                        usage('java-runtime') {
+                            fromResolutionResult()
                         }
                     }
                 }
 
+                repositories {
+                    mavenLocal()
+                }
+            }
+        }
+    }
+
+    subp.getPlugins().withId('java-platform') {
+        subp.afterEvaluate { Project p ->
+            print "*** Publishing for platform ***"
+            p.publishing {
+                publications.create("publish-${p.name}", MavenPublication) {
+                    from components.javaPlatform
+                }
                 repositories {
                     mavenLocal()
                 }
