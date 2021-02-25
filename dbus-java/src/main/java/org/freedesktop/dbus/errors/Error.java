@@ -141,6 +141,7 @@ public class Error extends Message {
   public DBusExecutionException getException() {
     try {
       Class<? extends DBusExecutionException> c = createExceptionClass(getName());
+      LOGGER.debug("Exception class for {}: {}", getName(), c);
       if (null == c || !DBusExecutionException.class.isAssignableFrom(c)) {
         c = DBusExecutionException.class;
       }
@@ -159,7 +160,7 @@ public class Error extends Message {
       ex.setType(getName());
       return ex;
     } catch (Exception ex1) {
-      LOGGER.debug("", ex1);
+      LOGGER.debug("Exception in getException() -- ", ex1);
       DBusExecutionException ex;
       Object[] args = null;
       try {
