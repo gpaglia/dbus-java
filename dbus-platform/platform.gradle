@@ -6,7 +6,7 @@ ext {
     dbus__wusaSemverPluginVersion = '2.3.7'
 
     // bnd / osgi
-    dbus__bndPluginVersion = '5.2.0'
+    dbus__bndPluginVersion = '5.3.0'
 
     // disable for now
     // dbus__modularityPluginVersion = '1.7.0'
