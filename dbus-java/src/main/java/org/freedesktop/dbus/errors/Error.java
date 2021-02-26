@@ -135,6 +135,7 @@ public class Error extends Message {
 
   /**
    * Turns this into an exception of the correct type
+   * Improved by gpaglia to include the exception name coming from upper layers (like bluez e.g.)
    *
    * @return exception
    */
@@ -142,21 +143,25 @@ public class Error extends Message {
     try {
       Class<? extends DBusExecutionException> c = createExceptionClass(getName());
       LOGGER.debug("Exception class for {}: {}", getName(), c);
+      String msgName = null;
       if (null == c || !DBusExecutionException.class.isAssignableFrom(c)) {
         c = DBusExecutionException.class;
+        msgName = getName();
       }
       Constructor<? extends DBusExecutionException> con = c.getConstructor(String.class);
       DBusExecutionException ex;
       Object[] args = getParameters();
-      if (null == args || 0 == args.length) {
-        ex = con.newInstance("");
-      } else {
-        StringBuilder s = new StringBuilder();
+      StringBuilder s = new StringBuilder();
+
+      if (msgName != null) {
+        s.append(msgName).append(" ");
+      }
+      if (args != null && args.length > 0) {
         for (Object o : args) {
           s.append(o).append(" ");
         }
-        ex = con.newInstance(s.toString().trim());
       }
+      ex = con.newInstance(s.toString().trim());
       ex.setType(getName());
       return ex;
     } catch (Exception ex1) {
